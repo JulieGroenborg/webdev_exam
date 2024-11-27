@@ -1,0 +1,6 @@
+restaurant:1 name Julie age 20 last_name g note "this is the note"
+restaurant:2 
+restaurant
+restaurant
+restaurant
+restaurant

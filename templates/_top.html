@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mixhtml.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/mojocss"></script>
+    <title>
+        {{ title or "Company" }}
+    </title>
+</head>
+
+<body class="w-full h-100vh text-c-gray:-16">
+    <header class="d-flex j-content-between ma-5 a-items-center">
+        <a href="{{url_for('view_index')}}"><img class="w-35" src="../static/assets/viento.svg"></img></a>
+
+        <nav>
+            <ul class="d-flex gap-3">
+                <li class="list-style-none"><a href="{{url_for('view_login')}}" class="text-c-(#202125)">Login</a></li>
+                <li class="list-style-none"><a class="bg-c-(#EBF7FD) text-c-(#00C2E8) px-4 py-2 rounded-3"
+                        href="{{url_for('view_index')}}">Sign up</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div id="toast" class="d-flex flex-col j-content-center p-fixed w-full top-4 z-10"></div>

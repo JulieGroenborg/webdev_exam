@@ -1,0 +1,33 @@
+{% include "_top.html" %}
+
+<main class="ma-7 d-flex">
+    <!-- <img src="{{ url_for('static', filename='dishes/dish_1.jpg') }}" alt=""> -->
+    <img class="w-50%" src="../static/assets/dish_landing.jpg" alt="">
+    <div class="ml-20">
+        <h1 class="text-(3rem)">Hi!</h1>
+        <h2 class="text-(2rem)">Welcome to Wolt</h2>
+
+        <legend class="a-self-center text-(1.2rem) pb-6">Choose what role you want to sign up as here!</legend>
+        <div id="chooseRole" class="d-flex j-content-center gap-9">
+            <div class="gap-2 d-flex flex-col j-self-center">
+                <a id="customer" href="/customer-signup"
+                    class="bg-c-(#00C2E8) text-c-(#ffffff) px-4 py-2 rounded-3">Customer</a>
+            </div>
+            <div class="gap-2 d-flex flex-col j-self-center">
+                <a id="partner" href="/partner-signup"
+                    class="bg-c-(#00C2E8) text-c-(#ffffff) px-4 py-2 rounded-3">Partner</a>
+            </div>
+            <div class="gap-2 d-flex flex-col j-self-center">
+                <a id="restaurant" href="/restaurant-signup"
+                    class="bg-c-(#00C2E8) text-c-(#ffffff) px-4 py-2 rounded-3">Restaurant</a>
+            </div>
+        </div>
+        <!-- <button mix-post="/users" mix-data="#frm_user_signup"
+            class="bg-c-(#EBF7FD) text-c-(#00C2E8) px-4 py-2 rounded-3 ml-auto mr-auto d-grid p-content-center mt-5">
+            Continue to signup
+        </button> -->
+    </div>
+
+</main>
+
+{% include "_bottom.html" %}
