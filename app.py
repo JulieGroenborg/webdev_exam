@@ -86,7 +86,7 @@ def view_login():
         if "partner" in session.get("user").get("roles"):
             return redirect(url_for("view_partner"))
     message = request.args.get("message", "")
-    return render_template("view_login", x=x, title="Login", message=message)
+    return render_template("view_login.html", x=x, title="Login", message=message)
 
 
 ##############################
