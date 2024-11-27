@@ -320,14 +320,21 @@ try:
             dish_id = str(random.randint(1, 100))
             cursor.execute("""
             INSERT INTO items (
-                item_pk, item_user_fk, item_title, item_price, item_image_name)
-                VALUES (%s, %s, %s, %s, %s)
+                item_pk, item_user_fk, item_title, item_price, item_image_1, item_image_2, item_image_3, item_created_at, item_deleted_at, item_blocked_at, item_updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                     str(uuid.uuid4()),
                     user_pk,
                     random.choice(dishes),
                     round(random.uniform(500, 999), 2),
-                    f"dish_{dish_id}.jpg"))
+                    f"dish_{dish_id}.jpg",  # item_image_1
+                    f"dish_{dish_id}.jpg",                  # item_image_2
+                    f"dish_{dish_id}.jpg",                  # item_image_3
+                    int(time.time()),      # item_created_at
+                    0,                     # item_deleted_at
+                    0,                     # item_blocked_at
+                    0                      # item_updated_at
+                ))
 
 
 
