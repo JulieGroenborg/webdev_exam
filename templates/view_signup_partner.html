@@ -5,7 +5,7 @@
     <h2 class="text-(3rem) text-a-center">Partner: sign up here</h2>
     <form id="frm_user_signup" class="w-40% d-flex flex-col gap-4 mx-auto">
 
-        <div class="d-flex flex-col">
+        <div class="d-flex flex-col">   
             <label for="user_name" class="d-flex">
                 <span>Name</span>
                 <span class="ml-auto text-c-gray:+25">{{ x.USER_NAME_MIN }} to {{ x.USER_NAME_MAX }}
@@ -43,11 +43,10 @@
             <input name="user_password" type="text" mix-check="{{ x.REGEX_USER_PASSWORD }}">
         </div>
 
-        <button mix-post="/users" mix-data="#frm_user_signup"
+        <button mix-post="/signup_partner" mix-data="#frm_user_signup"
             class="bg-c-(#EBF7FD) text-c-(#00C2E8) px-4 py-2 rounded-3">
             Sign up
         </button>
-
         <a href="{{url_for('view_login')}}" class="text-a-center text-c-(#202125)">Login</a>
 
     </form>
