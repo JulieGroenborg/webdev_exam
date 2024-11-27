@@ -77,14 +77,14 @@ def view_login():
     ic(session)
     # print(session, flush=True)
     if session.get("user"):
-        if len(session.get("user").get("roles")) > 1:
-            return redirect(url_for("view_choose_role"))
         if "admin" in session.get("user").get("roles"):
             return redirect(url_for("view_admin"))
         if "customer" in session.get("user").get("roles"):
             return redirect(url_for("view_customer"))
         if "partner" in session.get("user").get("roles"):
             return redirect(url_for("view_partner"))
+        if "restaurant" in session.get("user").get("roles"):
+            return redirect(url_for("view_restaurant"))
     return render_template("view_login.html", x=x, title="Login", message=request.args.get("message", ""))
 
 
@@ -95,8 +95,6 @@ def view_customer():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    if len(user.get("roles", "")) > 1:
-        return redirect(url_for("view_choose_role"))
     return render_template("view_customer.html", user=user)
 
 ##############################
@@ -106,8 +104,6 @@ def view_partner():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    if len(user.get("roles", "")) > 1:
-        return redirect(url_for("view_choose_role"))
     return render_template("view_partner.html", user=user)
 
 
@@ -147,18 +143,6 @@ def view_restaurant():
 
      # TODO: husk at close db again.
     
-##############################
-@app.get("/choose-role")
-@x.no_cache
-def view_choose_role():
-    if not session.get("user", ""):
-        return redirect(url_for("view_login"))
-    if not len(session.get("user").get("roles")) >= 2:
-        return redirect(url_for("view_login"))
-    user = session.get("user")
-    return render_template("view_choose_role.html", user=user, title="Choose role")
-    # TODO: evt. slet dette route
-
 
 ##############################
 
@@ -518,7 +502,7 @@ def login():
         session["user"] = user
         if len(roles) == 1:
             return f"""<template mix-redirect="/{roles[0]}"></template>"""
-        return f"""<template mix-redirect="/choose-role"></template>"""
+        return f"""<template mix-redirect="/"></template>"""
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
@@ -729,9 +713,14 @@ def user_update():
         if not session.get("user"): x.raise_custom_exception("please login", 401)
 
         user_pk = session.get("user").get("user_pk")
+        roles = session.get("user").get("roles")
         user_name = x.validate_user_name()
-        user_last_name = x.validate_user_last_name()
         user_email = x.validate_user_email()
+
+        if "restaurant" in roles:
+            user_last_name = ""
+        else:
+            user_last_name = x.validate_user_last_name()
 
         user_updated_at = int(time.time())
 
@@ -748,7 +737,7 @@ def user_update():
             "user_name": user_name,
             "user_last_name": user_last_name,
             "user_email": user_email,
-            "roles": session.get("user").get("roles")
+            "roles": roles
         }  
 
         session["user"] = user  
