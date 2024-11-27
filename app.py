@@ -613,7 +613,9 @@ def forgot_password():
         # Send the reset email (pass only the reset token)
         x.send_reset_email(user_email, reset_token)
 
-        return """<template mix-target="#toast" mix-bottom>Reset email sent.</template>""", 200
+
+        toast = render_template("___toast_ok.html", message="Reset email sent.")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
         if "db" in locals(): db.rollback()
