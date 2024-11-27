@@ -85,7 +85,8 @@ def view_login():
             return redirect(url_for("view_customer"))
         if "partner" in session.get("user").get("roles"):
             return redirect(url_for("view_partner"))
-    return render_template("view_login.html", x=x, title="Login", message=request.args.get("message", ""))
+    message = request.args.get("message", "")
+    return render_template("view_login.html", x=x, title="Login", message=message)
 
 
 ##############################
@@ -258,7 +259,9 @@ def signup_customer():
         x.send_verify_email(user_email, user_verification_key)
         db.commit()
 
-        return """<template mix-redirect="/login"></template>""", 201
+        # Redirect to login with a message
+        message = "Account created, please verify your account."
+        return f""""<template mix-redirect="/login?message={message}"></template>"""
 
     except Exception as ex:
         ic(ex)
@@ -271,11 +274,12 @@ def signup_customer():
             if "users.user_email" in str(ex):
                 toast = render_template("___toast.html", message="email not available")
                 return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", 400
-            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
         return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.post("/signup_partner")
@@ -473,10 +477,11 @@ def signup_restaurant():
 @app.post("/login")
 def login():
     try:
-
+        # Validate user inputs
         user_email = x.validate_user_email()
         user_password = x.validate_user_password()
 
+        # Query the database for the user
         db, cursor = x.db()
         q = """SELECT * FROM users WHERE user_email = %s"""
         cursor.execute(q, (user_email,))
@@ -497,8 +502,8 @@ def login():
         if not check_password_hash(user_row["user_password"], user_password):
             toast = render_template("___toast.html", message="Invalid credentials")
             return f"""<template mix-target="#toast">{toast}</template>""", 401
-        
-        
+
+        # Fetch roles for the user
         role_query = """SELECT * FROM users_roles 
                         JOIN roles ON role_pk = user_role_role_fk
                         WHERE user_role_user_fk = %s"""
@@ -507,6 +512,7 @@ def login():
 
         roles = [row["role_name"] for row in role_rows]
 
+        # Prepare user session data
         user = {
             "user_pk": user_row["user_pk"],
             "user_name": user_row["user_name"],
@@ -516,9 +522,12 @@ def login():
         }
         ic(user)
         session["user"] = user
+
+        # Redirect based on roles
         if len(roles) == 1:
             return f"""<template mix-redirect="/{roles[0]}"></template>"""
         return f"""<template mix-redirect="/choose-role"></template>"""
+
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
@@ -527,8 +536,9 @@ def login():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>System upgrating</template>", 500
+            return "<template>System upgrading</template>", 500
         return "<template>System under maintenance</template>", 500
+
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -660,7 +670,7 @@ def update_password():
         db.commit()
 
         print(f"Password updated successfully for user_pk: {user_pk}")  # Debugging
-        return redirect(url_for("view_login", message="Password updated, please login"))
+        return redirect(url_for("view_login.html", message="Password updated, please login"))
 
     except Exception as ex:
         print(f"Error: {ex}")  # Debugging
@@ -824,7 +834,7 @@ def item_update(item_pk):
 @app.put("/users/block/<user_pk>")
 def user_block(user_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = int(time.time())
 
@@ -869,7 +879,7 @@ def user_block(user_pk):
 @app.put("/users/unblock/<user_pk>")
 def user_unblock(user_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = 0
         db, cursor = x.db()
@@ -905,7 +915,7 @@ def user_unblock(user_pk):
 @app.put("/items/block/<item_pk>")
 def item_block(item_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
         item_pk = x.validate_uuid4(item_pk)
         item_blocked_at = int(time.time())
 
@@ -950,7 +960,7 @@ def item_block(item_pk):
 @app.put("/items/unblock/<item_pk>")
 def item_unblock(item_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
         item_pk = x.validate_uuid4(item_pk)
         item_blocked_at = 0
         db, cursor = x.db()
