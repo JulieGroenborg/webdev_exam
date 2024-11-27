@@ -86,7 +86,7 @@ def view_login():
         if "partner" in session.get("user").get("roles"):
             return redirect(url_for("view_partner"))
     message = request.args.get("message", "")
-    return render_template("view_login.html", x=x, title="Login", message=message)
+    return render_template("view_login", x=x, title="Login", message=message)
 
 
 ##############################
@@ -670,7 +670,7 @@ def update_password():
         db.commit()
 
         print(f"Password updated successfully for user_pk: {user_pk}")  # Debugging
-        return redirect(url_for("view_login.html", message="Password updated, please login"))
+        return redirect(url_for("view_login", message="Password updated, please login"))
 
     except Exception as ex:
         print(f"Error: {ex}")  # Debugging
@@ -834,7 +834,7 @@ def item_update(item_pk):
 @app.put("/users/block/<user_pk>")
 def user_block(user_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = int(time.time())
 
@@ -879,7 +879,7 @@ def user_block(user_pk):
 @app.put("/users/unblock/<user_pk>")
 def user_unblock(user_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = 0
         db, cursor = x.db()
@@ -915,7 +915,7 @@ def user_unblock(user_pk):
 @app.put("/items/block/<item_pk>")
 def item_block(item_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         item_pk = x.validate_uuid4(item_pk)
         item_blocked_at = int(time.time())
 
@@ -960,7 +960,7 @@ def item_block(item_pk):
 @app.put("/items/unblock/<item_pk>")
 def item_unblock(item_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login.html"))
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         item_pk = x.validate_uuid4(item_pk)
         item_blocked_at = 0
         db, cursor = x.db()
