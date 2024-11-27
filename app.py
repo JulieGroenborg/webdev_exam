@@ -216,6 +216,66 @@ def logout():
     # ic(session)
     return redirect(url_for("view_login"))
 
+##############################
+@app.post("/signup_customer")
+@x.no_cache
+def signup_customer():
+    try:
+        user_name = x.validate_user_name()
+        user_last_name = x.validate_user_last_name()
+        user_email = x.validate_user_email()
+        user_password = x.validate_user_password()
+        hashed_password = generate_password_hash(user_password)
+
+        role_pk = "c56a4180-65aa-42ec-a945-5fd21dec0538"
+
+        user_pk = str(uuid.uuid4())
+        user_avatar = ""
+        user_created_at = int(time.time())
+        user_deleted_at = 0
+        user_blocked_at = 0
+        user_updated_at = 0
+        user_verified_at = 0
+        user_verification_key = str(uuid.uuid4())
+
+        db, cursor = x.db()
+        cursor.execute(
+            """
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (user_pk, user_name, user_last_name, user_email, hashed_password,
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO users_roles (user_role_user_fk, user_role_role_fk)
+            VALUES (%s, %s)
+            """,
+            (user_pk, role_pk),
+        )
+
+        x.send_verify_email(user_email, user_verification_key)
+        db.commit()
+
+        return """<template mix-redirect="/login"></template>""", 201
+
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            if "users.user_email" in str(ex):
+                toast = render_template("___toast.html", message="email not available")
+                return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", 400
+            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 ##############################
 
