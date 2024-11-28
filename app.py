@@ -73,20 +73,19 @@ def view_index():
 @app.get("/login")
 @x.no_cache
 def view_login():
-    # ic("#"*20, "VIEW_LOGIN")
     ic(session)
-    # print(session, flush=True)
-    if session.get("user"):
-        if "admin" in session.get("user").get("roles"):
+    user = session.get("user")
+    if user and isinstance(user, dict):
+        roles = user.get("roles", [])
+        if "admin" in roles:
             return redirect(url_for("view_admin"))
-        if "customer" in session.get("user").get("roles"):
+        if "customer" in roles:
             return redirect(url_for("view_customer"))
-        if "partner" in session.get("user").get("roles"):
+        if "partner" in roles:
             return redirect(url_for("view_partner"))
-    message = request.args.get("message", "")
-    if "restaurant" in session.get("user").get("roles"):
-        return redirect(url_for("view_restaurant"))
-    return render_template("view_login.html", x=x, title="Login", message=message)
+        if "restaurant" in roles:
+            return redirect(url_for("view_restaurant"))
+    return render_template("view_login.html", x=x, title="Login", message=request.args.get("message", ""))
 
 
 ##############################
