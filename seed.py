@@ -316,7 +316,7 @@ try:
             VALUES (%s, %s)
         """, (user_pk, x.RESTAURANT_ROLE_PK))
 
-        for _ in range(random.randint(5,500)):
+        for _ in range(random.randint(5,50)):
             dish_id = str(random.randint(1, 100))
             cursor.execute("""
             INSERT INTO items (

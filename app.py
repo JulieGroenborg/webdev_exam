@@ -588,7 +588,7 @@ def forgot_password():
         # Fetch user by email
         db, cursor = x.db()
         q = "SELECT user_pk FROM users WHERE user_email = %s AND user_deleted_at = 0"
-        cursor.execute(q, (user_email,))
+        cursor.execute(q, (user_email))
         user = cursor.fetchone()
 
         if not user:
@@ -824,12 +824,15 @@ def user_block(user_pk):
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = int(time.time())
-
         db, cursor = x.db()
         q = 'UPDATE users SET user_blocked_at = %s WHERE user_pk = %s'
         cursor.execute(q, (user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block user", 400)
         db.commit()
+        
+        # send the blocked user email and include the user_pk to the x function
+        x.send_blocked_email(user_pk = user_pk)
+        
         # btn_unblock = render_template("___btn_unblock_user.html", user=user)
         # toast = render_template("__toast.html", message="User blocked")
         # return f"""
@@ -874,6 +877,9 @@ def user_unblock(user_pk):
         cursor.execute(q, (user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock user", 400)
         db.commit()
+        
+        # send the unblocked user email and include the user_pk to the x function
+        x.send_unblocked_email(user_pk = user_pk)
         # toast = render_template("___toast_ok.html", message="User unblocked")
         # return f"""<template mix-target="#toast" mix-bottom>
         #             {toast}
@@ -905,12 +911,16 @@ def item_block(item_pk):
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         item_pk = x.validate_uuid4(item_pk)
         item_blocked_at = int(time.time())
-
+        
+        
         db, cursor = x.db()
         q = 'UPDATE items SET item_blocked_at = %s WHERE item_pk = %s'
         cursor.execute(q, (item_blocked_at, item_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block item", 400)
         db.commit()
+        
+        # send the blocked item email and include the item_pk to the x function
+        x.send_blocked_email(item_pk = item_pk)
         # btn_unblock = render_template("___btn_unblock_user.html", user=user)
         # toast = render_template("__toast.html", message="User blocked")
         # return f"""
@@ -955,6 +965,9 @@ def item_unblock(item_pk):
         cursor.execute(q, (item_blocked_at, item_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock item", 400)
         db.commit()
+        
+        # send the unblocked item email and include the item_pk to the x function
+        x.send_unblocked_email(item_pk = item_pk)
         # toast = render_template("___toast_ok.html", message="User unblocked")
         # return f"""<template mix-target="#toast" mix-bottom>
         #             {toast}
