@@ -222,11 +222,11 @@ try:
 
 
     ############################## 
-    # Create 50 customer
+    # Create 10 customer
 
     domains = ["example.com", "testsite.org", "mydomain.net", "website.co", "fakemail.io", "gmail.com", "hotmail.com"]
     user_password = hashed_password = generate_password_hash("password")
-    for _ in range(50):
+    for _ in range(10):
         user_pk = str(uuid.uuid4())
         user_verified_at = random.choice([0,int(time.time())])
         user = {
@@ -253,10 +253,10 @@ try:
 
 
     ############################## 
-    # Create 50 partners
+    # Create 10 partners
 
     user_password = hashed_password = generate_password_hash("password")
-    for _ in range(50):
+    for _ in range(10):
         user_pk = str(uuid.uuid4())
         user_verified_at = random.choice([0,int(time.time())])
         user = {
@@ -284,7 +284,7 @@ try:
         """, (user_pk, x.PARTNER_ROLE_PK))
 
     ############################## 
-    # Create 50 restaurants
+    # Create 10 restaurants
     # Dishes available
     dishes = ["Spaghetti Carbonara", "Chicken Alfredo", "Beef Wellington", "Sushi", "Pizza Margherita", "Tacos", 
               "Caesar Salad", "Fish and Chips", "Pad Thai", "Dim Sum", "Croissant", "Ramen", "Lasagna", "Burrito", 
@@ -304,7 +304,7 @@ try:
 
     user_password = hashed_password = generate_password_hash("password")
 
-    for _ in range(50):
+    for _ in range(10):
         user_pk = str(uuid.uuid4())
         user_verified_at = random.choice([0, int(time.time())])
         user = {
