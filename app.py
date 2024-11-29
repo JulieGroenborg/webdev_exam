@@ -97,20 +97,19 @@ def view_customer():
     user = session.get("user")
     db, cursor = x.db()
 
+    # i used something called a subquery here, so it is easier to understand for us. otherwise the query is not very easy to read
     cursor.execute("""
-        SELECT users.*, roles.role_name 
-        FROM users
-        JOIN users_roles ON users.user_pk = users_roles.user_role_user_fk
+        SELECT * FROM users WHERE user_pk IN (
+        SELECT user_role_user_fk FROM users_roles
         JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
-        WHERE roles.role_name = 'restaurant'
+        WHERE roles.role_name = 'restaurant')
     """)
     restaurants = cursor.fetchall()
 
     cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC")
     items = cursor.fetchall()
 
-    return render_template("view_customer.html", user=user, items=items, restaurants=restaurants
-    )
+    return render_template("view_customer.html", user=user, items=items, restaurants=restaurants)
 
 
 
