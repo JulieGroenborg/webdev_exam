@@ -285,27 +285,41 @@ try:
 
     ############################## 
     # Create 50 restaurants
-    dishes = ["Spaghetti Carbonara","Chicken Alfredo","Beef Wellington","Sushi","Pizza Margherita","Tacos","Caesar Salad","Fish and Chips","Pad Thai","Dim Sum","Croissant","Ramen","Lasagna","Burrito","Chicken Parmesan","Tom Yum Soup","Shawarma","Paella","Hamburger","Pho","Chicken Tikka Masala","Moussaka","Goulash","Bangers and Mash","Peking Duck","Falafel","Ceviche","Chili Con Carne","Ratatouille","Beef Stroganoff","Fajitas","Samosas","Lobster Roll","Arancini","Tiramisu","Beef Empanadas","Poutine","Biryani","Hummus","Schnitzel","Meatloaf","Quiche","Paella Valenciana","Clam Chowder","Sweet and Sour Pork","Enchiladas","Crepes","Masala Dosa","Gnocchi","Jambalaya","Pork Ribs","Tandoori Chicken","Nasi Goreng","Kimchi","Roti","Lamb Tagine","Risotto","Croque Monsieur","Beef Burritos","Baked Ziti","Yakitori","Fettuccine Alfredo","Peking Duck Pancakes","Empanadas","Ahi Poke","Cacciatore","Pappardelle","Cannelloni","Empanadas de Pollo","Gado-Gado","Carne Asada","Chicken Katsu","Falafel Wrap","Maki Rolls","Stuffed Bell Peppers","Souvlaki","Bibimbap","Tofu Stir Fry","Chilaquiles","Mango Sticky Rice","Ragu","Beef Brisket","Tortilla Española","Panzanella","Chicken Shawarma","Pesto Pasta","Bulgogi","Maki Sushi","Cordon Bleu","Blini with Caviar","Clafoutis","Salmon Teriyaki","Shrimp Scampi","Frittata","Chateaubriand","Crab Cakes","Chicken Fried Rice","Hot Pot","Mole Poblano","Tofu Scramble"]
-
-
+    # Dishes available
+    dishes = ["Spaghetti Carbonara", "Chicken Alfredo", "Beef Wellington", "Sushi", "Pizza Margherita", "Tacos", 
+              "Caesar Salad", "Fish and Chips", "Pad Thai", "Dim Sum", "Croissant", "Ramen", "Lasagna", "Burrito", 
+              "Chicken Parmesan", "Tom Yum Soup", "Shawarma", "Paella", "Hamburger", "Pho", "Chicken Tikka Masala", 
+              "Moussaka", "Goulash", "Bangers and Mash", "Peking Duck", "Falafel", "Ceviche", "Chili Con Carne", 
+              "Ratatouille", "Beef Stroganoff", "Fajitas", "Samosas", "Lobster Roll", "Arancini", "Tiramisu", 
+              "Beef Empanadas", "Poutine", "Biryani", "Hummus", "Schnitzel", "Meatloaf", "Quiche", "Paella Valenciana", 
+              "Clam Chowder", "Sweet and Sour Pork", "Enchiladas", "Crepes", "Masala Dosa", "Gnocchi", "Jambalaya", 
+              "Pork Ribs", "Tandoori Chicken", "Nasi Goreng", "Kimchi", "Roti", "Lamb Tagine", "Risotto", 
+              "Croque Monsieur", "Beef Burritos", "Baked Ziti", "Yakitori", "Fettuccine Alfredo", "Peking Duck Pancakes", 
+              "Empanadas", "Ahi Poke", "Cacciatore", "Pappardelle", "Cannelloni", "Empanadas de Pollo", "Gado-Gado", 
+              "Carne Asada", "Chicken Katsu", "Falafel Wrap", "Maki Rolls", "Stuffed Bell Peppers", "Souvlaki", 
+              "Bibimbap", "Tofu Stir Fry", "Chilaquiles", "Mango Sticky Rice", "Ragu", "Beef Brisket", 
+              "Tortilla Española", "Panzanella", "Chicken Shawarma", "Pesto Pasta", "Bulgogi", "Maki Sushi", 
+              "Cordon Bleu", "Blini with Caviar", "Clafoutis", "Salmon Teriyaki", "Shrimp Scampi", "Frittata", 
+              "Chateaubriand", "Crab Cakes", "Chicken Fried Rice", "Hot Pot", "Mole Poblano", "Tofu Scramble"]
 
     user_password = hashed_password = generate_password_hash("password")
+
     for _ in range(50):
         user_pk = str(uuid.uuid4())
-        user_verified_at = random.choice([0,int(time.time())])
+        user_verified_at = random.choice([0, int(time.time())])
         user = {
-            "user_pk" : user_pk,
-            "user_name" : fake.first_name(),
-            "user_last_name" : "",
-            "user_email" : fake.unique.email(),
-            "user_password" : user_password,
-            "user_avatar" : "profile_"+ str(random.randint(1, 100)) +".jpg",
-            "user_created_at" : int(time.time()),
-            "user_deleted_at" : 0,
-            "user_blocked_at" : 0,
-            "user_updated_at" : 0,
-            "user_verified_at" : user_verified_at,
-            "user_verification_key" : str(uuid.uuid4())
+            "user_pk": user_pk,
+            "user_name": fake.first_name(),
+            "user_last_name": "",
+            "user_email": fake.unique.email(),
+            "user_password": user_password,
+            "user_avatar": "profile_" + str(random.randint(1, 100)) + ".jpg",
+            "user_created_at": int(time.time()),
+            "user_deleted_at": 0,
+            "user_blocked_at": 0,
+            "user_updated_at": 0,
+            "user_verified_at": user_verified_at,
+            "user_verification_key": str(uuid.uuid4())
         }
         insert_user(user)
 
@@ -316,27 +330,27 @@ try:
             VALUES (%s, %s)
         """, (user_pk, x.RESTAURANT_ROLE_PK))
 
-        for _ in range(random.randint(5,50)):
+        # Randomly select 6 unique dishes per restaurant
+        restaurant_dishes = random.sample(dishes, 6)  
+        for dish in restaurant_dishes:
             dish_id = str(random.randint(1, 100))
             cursor.execute("""
             INSERT INTO items (
                 item_pk, item_user_fk, item_title, item_price, item_image_1, item_image_2, item_image_3, item_created_at, item_deleted_at, item_blocked_at, item_updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
-                    str(uuid.uuid4()),
-                    user_pk,
-                    random.choice(dishes),
-                    round(random.uniform(500, 999), 2),
-                    f"dish_{dish_id}.jpg",  # item_image_1
-                    f"dish_{dish_id}.jpg",                  # item_image_2
-                    f"dish_{dish_id}.jpg",                  # item_image_3
-                    int(time.time()),      # item_created_at
-                    0,                     # item_deleted_at
-                    0,                     # item_blocked_at
-                    0                      # item_updated_at
-                ))
-
-
+                str(uuid.uuid4()),
+                user_pk,
+                dish,
+                round(random.uniform(500, 999), 2),
+                f"dish_{dish_id}.jpg",  # item_image_1
+                f"dish_{dish_id}.jpg",  # item_image_2
+                f"dish_{dish_id}.jpg",  # item_image_3
+                int(time.time()),      # item_created_at
+                0,                     # item_deleted_at
+                0,                     # item_blocked_at
+                0                      # item_updated_at
+            ))
 
     db.commit()
 
@@ -347,5 +361,3 @@ except Exception as ex:
 finally:
     if "cursor" in locals(): cursor.close()
     if "db" in locals(): db.close()
-
-
