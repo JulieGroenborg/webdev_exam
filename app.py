@@ -162,8 +162,8 @@ def view_choose_role():
 
 ##############################
 
-@app.get("/reset_password")
-def reset_request():
+@app.get("/reset-password")
+def view_forgot_password():
     return render_template("view_reset_password.html", title="Reset Password", x=x)
 
 ##############################
@@ -193,6 +193,35 @@ def view_signup_restaurant():
 def view_signup_partner():
     return render_template("view_signup_partner.html", x=x, title="Signup")
 
+##############################
+@app.get("/reset-password/<user_reset_password_key>")
+def reset_password(user_reset_password_key):
+    try:
+        user_reset_password_key = x.validate_uuid4(user_reset_password_key)
+        db, cursor = x.db()
+
+        cursor.execute("""  SELECT user_pk
+                        FROM users
+                        WHERE user_reset_password_key = %s""", (user_reset_password_key,))
+        user = cursor.fetchone()
+
+        # print(f"User fetched: {user}")  # Debugging
+
+        if not user:
+            raise x.CustomException("Error: no access", 400)
+
+        # Render the reset password form
+        return render_template("view_set_new_password.html", user_reset_password_key=user_reset_password_key, x=x)
+
+    except Exception as ex:
+        print(f"Error: {ex}")  # Debugging
+        if isinstance(ex, x.CustomException):
+            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
@@ -589,40 +618,35 @@ def create_item():
 @app.post("/forgot-password")
 def forgot_password():
     try:
-        user_email = request.form.get("user_email")
-        if not user_email:
-            raise x.CustomException("Email is required", 400)
-
-        # Fetch user by email
+        user_email = x.validate_user_email()
         db, cursor = x.db()
-        q = "SELECT user_pk FROM users WHERE user_email = %s AND user_deleted_at = 0"
-        cursor.execute(q, (user_email,))
-        user = cursor.fetchone()
+        user_reset_password_key = str(uuid.uuid4())
+        
+        q = """ UPDATE users
+                SET user_reset_password_key = %s
+                WHERE user_email = %s
+                """
 
-        if not user:
-            raise x.CustomException("Email not found", 404)
-
-        # Generate a reset token
-        reset_token = str(uuid.uuid4())
-
-        # Store the reset token in the database
-        q = "UPDATE users SET user_verification_key = %s WHERE user_pk = %s"
-        cursor.execute(q, (reset_token, user["user_pk"]))
+        cursor.execute(q, (user_reset_password_key, user_email))
+        if cursor.rowcount != 1: x.raise_custom_exception("user not found", 400)
         db.commit()
 
         # Send the reset email (pass only the reset token)
-        x.send_reset_email(user_email, reset_token)
-
+        x.send_reset_email(user_email, user_reset_password_key)
 
         toast = render_template("___toast_ok.html", message="Reset email sent.")
         return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
-
+        
     except Exception as ex:
+        ic(ex)
         if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
+        if isinstance(ex, x.CustomException): 
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return "<template>System upgrating</template>", 500        
+        return "<template>System under maintenance</template>", 500 
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -630,46 +654,54 @@ def forgot_password():
 
 
 ##############################
-@app.post("/reset_password")
-def update_password():
+
+@app.put("/reset-password/<user_reset_password_key>") #should it be a post or put?
+def new_password(user_reset_password_key):
     try:
-        user_pk = request.form.get("user_pk")
-        new_password = request.form.get("new_password")
-        confirm_password = request.form.get("confirm_password")
+        user_reset_password_key = x.validate_uuid4(user_reset_password_key)
+        user_password = x.validate_user_password()
+        user_repeat_password = request.form.get("user_repeat_password", "")
+        if user_password != user_repeat_password: x.raise_custom_exception("password do not match", 400)
+        
+        user_updated_at = int(time.time())
+        hashed_password = generate_password_hash(user_password)
 
-        if not user_pk or not new_password or not confirm_password:
-            raise x.CustomException("All fields are required", 400)
-
-        if new_password != confirm_password:
-            raise x.CustomException("Passwords do not match", 400)
-
-        # Hash the new password
-        hashed_password = generate_password_hash(new_password)
-
-        # Get the current epoch timestamp
-        updated_at = int(time.time())
-
-        # Update the user's password and updated_at in the database
         db, cursor = x.db()
-        q = """
-            UPDATE users 
-            SET user_password = %s, user_updated_at = %s 
-            WHERE user_pk = %s
-        """
-        cursor.execute(q, (hashed_password, updated_at, user_pk))
+        q = ("""    UPDATE users
+                    SET user_password = %s, user_updated_at = %s
+                    WHERE user_reset_password_key = %s""")
+        cursor.execute(q, (hashed_password, user_updated_at, user_reset_password_key))
+        if cursor.rowcount != 1: x.raise_custom_exception("cannot save password", 400) 
+
+        # The user_reset_password_key is sat to 0, so the user can't keep on updating the password
+        cursor.execute("""
+         UPDATE users
+         SET user_reset_password_key = 0
+         WHERE user_reset_password_key = %s
+        """, (user_reset_password_key,))
+
+
         db.commit()
+        toast = render_template("___toast_ok.html", message="Password updated")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>
+        <template mix-target="#user_password" mix-replace>
+            <input type="password" id="user_password" name="user_password" value="">
+        </template>
+        <template mix-target="#user_repeat_password" mix-replace>
+            <input type="password" id="user_repeat_password" name="user_repeat_password" value="">
+        </template>"""
 
-        print(f"Password updated successfully for user_pk: {user_pk}")  # Debugging
-        return redirect(url_for("view_login", message="Password updated, please login"))
-
+    
     except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
+        ic(ex)
         if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
+        if isinstance(ex, x.CustomException): 
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return "<template>System upgrating</template>", 500        
+        return "<template>System under maintenance</template>", 500  
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -833,20 +865,6 @@ def user_block(user_pk):
         cursor.execute(q, (user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block user", 400)
         db.commit()
-        # btn_unblock = render_template("___btn_unblock_user.html", user=user)
-        # toast = render_template("__toast.html", message="User blocked")
-        # return f"""
-        #         <template 
-        #         mix-target='#block-{user_pk}' 
-        #         mix-replace>
-        #             {btn_unblock}
-        #         </template>
-        #         <template mix-target="#toast" mix-bottom>
-        #             {toast}
-        #         </template>
-        #         """
-
-        # Kan det virkelig være rigtigt kan jeg skal redirect? Kan jeg ikke bare udskifte knappen?
         return f"""
                 <template mix-redirect="/admin"></template>
                 """
@@ -877,10 +895,6 @@ def user_unblock(user_pk):
         cursor.execute(q, (user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock user", 400)
         db.commit()
-        # toast = render_template("___toast_ok.html", message="User unblocked")
-        # return f"""<template mix-target="#toast" mix-bottom>
-        #             {toast}
-        #         </template>"""
         return f"""
                 <template mix-redirect="/admin"></template>
                 """
@@ -1066,37 +1080,6 @@ def verify_user(verification_key):
             ic(ex)
             return "Database under maintenance", 500
         return "System under maintenance", 500
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
-
-@app.get("/reset_password/<token>")
-def reset_password(token):
-    try:
-        print(f"Token received: {token}")  # Debugging
-        # Verify the reset token
-        db, cursor = x.db()
-        q = "SELECT user_pk FROM users WHERE user_verification_key = %s AND user_deleted_at = 0"
-        cursor.execute(q, (token,))
-        user = cursor.fetchone()
-
-        print(f"User fetched: {user}")  # Debugging
-
-        if not user:
-            raise x.CustomException("Invalid or expired reset link", 400)
-
-        # Render the reset password form
-        return render_template("view_set_new_password.html", user_pk=user["user_pk"])
-
-    except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
-        if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()

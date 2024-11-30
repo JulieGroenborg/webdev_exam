@@ -224,7 +224,7 @@ def send_reset_email(user_email, reset_token):
         password = "atxxbyhicjzrsnhs"  # App Password for Gmail (with 2FA enabled)
 
         # Construct the reset URL
-        reset_url = f"http://127.0.0.1/reset_password/{reset_token}"
+        reset_url = f"http://127.0.0.1/reset-password/{reset_token}"
 
         # Create the email message
         message = MIMEMultipart()
