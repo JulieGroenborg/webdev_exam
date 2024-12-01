@@ -251,9 +251,10 @@ def send_reset_email(user_email, reset_token):
 
     except Exception as ex:
         raise CustomException("Cannot send email", 500)
+
+    ##########################################################
     
-##############################
-def send_delete_email(to_email, delete_key):
+def send_blocked_email(user_pk=None, item_pk=None):
     try:
         # Create a gmail fullflaskdemomail
         # Enable (turn on) 2 step verification/factor in the google account manager
@@ -269,12 +270,21 @@ def send_delete_email(to_email, delete_key):
         
         # Create the email message
         message = MIMEMultipart()
-        message["From"] = "My company name"
+        message["From"] = sender_email
         message["To"] = receiver_email
-        message["Subject"] = "Please confirm the deletion of your account"
+        
 
+        if user_pk:
+            message["Subject"] = "User blocked from Viento"
+            body = f"User with ID {user_pk} has been blocked from Viento."
+        elif item_pk:
+            message["Subject"] = "Item blocked from Viento"
+            body = f"Item with ID {item_pk} has been blocked from Viento."
+        else:
+            raise ValueError("Either user_pk or item_pk must be provided.")
+
+        # body = f"""You have been blocked from viento."""
         # Body of the email
-        body = f"""To confirm the deletion of your account, please <a href="http://127.0.0.1/verify/{delete_key}">click here</a>"""
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
@@ -285,7 +295,58 @@ def send_delete_email(to_email, delete_key):
         print("Email sent successfully!")
 
         return "email sent"
+       
+    except Exception as ex:
+        raise_custom_exception("cannot send email", 500)
+    finally:
+        pass
     
+    
+    
+    
+    
+def send_unblocked_email(user_pk=None, item_pk=None):
+    try:
+        # Create a gmail fullflaskdemomail
+        # Enable (turn on) 2 step verification/factor in the google account manager
+        # Visit: https://myaccount.google.com/apppasswords
+        # My key/password: atxxbyhicjzrsnhs  
+
+        # Email and password of the sender's Gmail account
+        sender_email = "fullflaskdemoemailexam@gmail.com"
+        password = "atxxbyhicjzrsnhs"  # If 2FA is on, use an App Password instead
+
+        # Receiver email address
+        receiver_email = "fullflaskdemoemailexam@gmail.com"
+        
+        # Create the email message
+        message = MIMEMultipart()
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        
+        # Checks whether it's an item or user that's being unblocked.
+        # if the route sends a user_pk it will send the user body, and the same for item_pk if it's sent.
+        if user_pk:
+            message["Subject"] = "User unblocked from Viento"
+            body = f"User with ID {user_pk} has been unblocked from Viento."
+        elif item_pk:
+            message["Subject"] = "Item unblocked from Viento"
+            body = f"Item with ID {item_pk} has been unblocked from Viento."
+        else:
+            raise ValueError("Either user_pk or item_pk must be provided.")
+
+        # Body of the email
+        message.attach(MIMEText(body, "html"))
+
+        # Connect to Gmail's SMTP server and send the email
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # Upgrade the connection to secure
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully!")
+
+        return "email sent"
+       
     except Exception as ex:
         raise_custom_exception("cannot send email", 500)
     finally:
