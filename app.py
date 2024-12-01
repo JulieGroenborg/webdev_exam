@@ -118,8 +118,13 @@ def view_admin():
         return redirect(url_for("view_login"))
     
     db, cursor = x.db()
-    cursor.execute("SELECT * FROM users ORDER BY user_created_at DESC") #Get all users
+    cursor.execute("""  SELECT * FROM users
+                        JOIN users_roles ON user_pk = user_role_user_fk  
+                        JOIN roles ON user_role_role_fk = role_pk                
+                        ORDER BY user_created_at DESC
+                   """) #Get all users and their role
     users = cursor.fetchall()
+    ic("Dette er user", users)
 
     cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC") #Get all items
     items = cursor.fetchall()
@@ -486,7 +491,7 @@ def login():
             toast = render_template("___toast.html", message="Invalid credentials")
             return f"""<template mix-target="#toast">{toast}</template>""", 401
 
-        # Fetch roles for the user
+        # Fetch role for the user
         role_query = """SELECT * FROM users_roles 
                         JOIN roles ON role_pk = user_role_role_fk
                         WHERE user_role_user_fk = %s"""
@@ -825,31 +830,27 @@ def user_block(user_pk):
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = int(time.time())
         db, cursor = x.db()
-        q = 'UPDATE users SET user_blocked_at = %s WHERE user_pk = %s'
-        cursor.execute(q, (user_blocked_at, user_pk))
+        q = 'UPDATE users SET user_blocked_at = %s, user_updated_at = %s WHERE user_pk = %s'
+        cursor.execute(q, (user_blocked_at, user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block user", 400)
         db.commit()
         
         # send the blocked user email and include the user_pk to the x function
         x.send_blocked_email(user_pk = user_pk)
-        
-        # btn_unblock = render_template("___btn_unblock_user.html", user=user)
-        # toast = render_template("__toast.html", message="User blocked")
-        # return f"""
-        #         <template 
-        #         mix-target='#block-{user_pk}' 
-        #         mix-replace>
-        #             {btn_unblock}
-        #         </template>
-        #         <template mix-target="#toast" mix-bottom>
-        #             {toast}
-        #         </template>
-        #         """
-
-        # Kan det virkelig være rigtigt kan jeg skal redirect? Kan jeg ikke bare udskifte knappen?
+        user = {"user_pk":user_pk}
+        btn_unblock = render_template("___btn_unblock_user.html", user=user)
+        toast = render_template("___toast.html", message="User blocked")
         return f"""
-                <template mix-redirect="/admin"></template>
+                <template 
+                mix-target='#block-{user_pk}' 
+                mix-replace>
+                    {btn_unblock}
+                </template>
+                <template mix-target="#toast" mix-bottom>
+                    {toast}
+                </template>
                 """
+
 
     except Exception as ex:
         ic(ex)
@@ -880,13 +881,20 @@ def user_unblock(user_pk):
         
         # send the unblocked user email and include the user_pk to the x function
         x.send_unblocked_email(user_pk = user_pk)
-        # toast = render_template("___toast_ok.html", message="User unblocked")
-        # return f"""<template mix-target="#toast" mix-bottom>
-        #             {toast}
-        #         </template>"""
+        user = {"user_pk":user_pk}
+        btn_block = render_template("___btn_block_user.html", user=user)
+        toast = render_template("___toast_ok.html", message="User unblocked")
         return f"""
-                <template mix-redirect="/admin"></template>
+                <template 
+                mix-target='#unblock-{user_pk}' 
+                mix-replace>
+                    {btn_block}
+                </template>
+                <template mix-target="#toast" mix-bottom>
+                    {toast}
+                </template>
                 """
+        
 
     except Exception as ex:
 

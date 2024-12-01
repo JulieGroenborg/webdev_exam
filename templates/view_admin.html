@@ -3,7 +3,7 @@
 Admin
 
 
-<form id="frm_user_update">
+<!-- <form id="frm_user_update">
     <input type="text" name="user_name" mix-check="{{ x.USER_NAME_REGEX }}" value="{{user['user_name']}}">
     <input type="text" name="user_last_name" value="{{user['user_last_name']}}"
         mix-check="{{ x.USER_LAST_NAME_REGEX }}">
@@ -11,14 +11,14 @@ Admin
     <button mix-put="/users" mix-data="#frm_user_update">
         Update user
     </button>
-</form>
+</form> -->
 
 <div class="d-flex">
     <section class="w-40%">
         <h2>All users</h2>
         {% for user in users %}
         <div class="d-flex j-content-between mb-5 mt-5">
-            <form id="frm_user_block-{{user['user_pk']}}" class="d-flex w-60% j-content-between">
+            <form id="frm_user_xblock-{{user['user_pk']}}" class="d-flex w-60% j-content-between">
                 <p>{{user['user_email']}}</p>
 
                 {% if user['user_verified_at'] != 0 %}
