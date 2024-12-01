@@ -143,13 +143,6 @@ def view_restaurant():
 
      # TODO: husk at close db again.
     
-
-##############################
-
-@app.get("/reset-password")
-def view_forgot_password():
-    return render_template("view_reset_password.html", title="Reset Password", x=x)
-
 ##############################
 @app.get("/profile")
 @x.no_cache
@@ -178,8 +171,13 @@ def view_signup_partner():
     return render_template("view_signup_partner.html", x=x, title="Signup")
 
 ##############################
+@app.get("/reset-password")
+def view_forgot_password():
+    return render_template("view_reset_password.html", title="Reset Password", x=x)
+
+##############################
 @app.get("/reset-password/<user_reset_password_key>")
-def reset_password(user_reset_password_key):
+def view_reset_password(user_reset_password_key):
     try:
         user_reset_password_key = x.validate_uuid4(user_reset_password_key)
         db, cursor = x.db()
@@ -189,18 +187,18 @@ def reset_password(user_reset_password_key):
                         WHERE user_reset_password_key = %s""", (user_reset_password_key,))
         user = cursor.fetchone()
 
-        # print(f"User fetched: {user}")  # Debugging
-
+        #When user_reset_password_key = 0 then if not user is true, and the customer is taken to an error-page
         if not user:
-            raise x.CustomException("Error: no access", 400)
+            raise x.CustomException("This link has already been used.", 400)
 
         # Render the reset password form
         return render_template("view_set_new_password.html", user_reset_password_key=user_reset_password_key, x=x)
 
     except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
+        ic("I'm in the exception")  # Debugging
         if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+            ic(f"Exception message: {ex.message}, Code: {ex.code}") ## Debugging
+            return render_template("view_400_error_to_customer.html", message=ex.message), ex.code
         return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
 
     finally:
@@ -1000,16 +998,10 @@ def new_password(user_reset_password_key):
          WHERE user_reset_password_key = %s
         """, (user_reset_password_key,))
 
-
         db.commit()
-        toast = render_template("___toast_ok.html", message="Password updated")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>
-        <template mix-target="#user_password" mix-replace>
-            <input type="password" id="user_password" name="user_password" value="">
-        </template>
-        <template mix-target="#user_repeat_password" mix-replace>
-            <input type="password" id="user_repeat_password" name="user_repeat_password" value="">
-        </template>"""
+        
+        message = "Password has been updated, please login"
+        return f""""<template mix-redirect="/login?message={message}"></template>"""
 
     
     except Exception as ex:
