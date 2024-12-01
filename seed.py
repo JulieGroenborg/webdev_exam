@@ -17,7 +17,7 @@ db, cursor = x.db()
 def insert_user(user):       
     q = f"""
         INSERT INTO users
-        VALUES (%s, %s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s)        
+        VALUES (%s, %s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s, %s)        
         """
     values = tuple(user.values())
     cursor.execute(q, values)
@@ -50,6 +50,7 @@ try:
             user_updated_at INTEGER UNSIGNED,
             user_verified_at INTEGER UNSIGNED,
             user_verification_key CHAR(36),
+            restet_password_key CHAR(36),
             PRIMARY KEY(user_pk)
         )
         """        
@@ -132,7 +133,8 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4()) 
+        "user_verification_key" : str(uuid.uuid4()),
+        "restet_password_key" : 0
     }            
     insert_user(user)
     # Assign role to admin user
@@ -157,7 +159,8 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4())
+        "user_verification_key" : str(uuid.uuid4()),
+        "restet_password_key" : 0
     }
     insert_user(user)
    
@@ -184,7 +187,9 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4())
+        "user_verification_key" : str(uuid.uuid4()),
+        "restet_password_key" : 0
+        
     }
     insert_user(user)
     # Assign role to partner user
@@ -209,7 +214,8 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4())
+        "user_verification_key" : str(uuid.uuid4()),
+        "restet_password_key" : 0
     }
     insert_user(user)
     
@@ -242,7 +248,8 @@ try:
             "user_blocked_at" : 0,
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
-            "user_verification_key" : str(uuid.uuid4())
+            "user_verification_key" : str(uuid.uuid4()),
+            "restet_password_key" : 0
         }
 
         insert_user(user)
@@ -271,7 +278,8 @@ try:
             "user_blocked_at" : 0,
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
-            "user_verification_key" : str(uuid.uuid4())
+            "user_verification_key" : str(uuid.uuid4()),
+            "restet_password_key" : 0
         }
 
         insert_user(user)
@@ -319,7 +327,8 @@ try:
             "user_blocked_at": 0,
             "user_updated_at": 0,
             "user_verified_at": user_verified_at,
-            "user_verification_key": str(uuid.uuid4())
+            "user_verification_key": str(uuid.uuid4()),
+            "restet_password_key": 0
         }
         insert_user(user)
 
