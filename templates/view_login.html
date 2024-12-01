@@ -6,9 +6,12 @@
 
     <form id="frm_user_login" class="w-25% d-flex flex-col gap-4 mx-auto">
 
+        {% if message %}
         <div class="text-c-green text-200">
             {{ message }}
         </div>
+        {% endif %}
+        
         <div class="d-flex flex-col">
             <label for="user_email">
                 <span>E-mail</span>

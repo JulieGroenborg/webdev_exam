@@ -73,18 +73,18 @@ def view_index():
 @app.get("/login")
 @x.no_cache
 def view_login():
-    # ic("#"*20, "VIEW_LOGIN")
     ic(session)
-    # print(session, flush=True)
-    if session.get("user"):
-        if len(session.get("user").get("roles")) > 1:
-            return redirect(url_for("view_choose_role"))
-        if "admin" in session.get("user").get("roles"):
+    user = session.get("user")
+    if user and isinstance(user, dict):
+        roles = user.get("roles", [])
+        if "admin" in roles:
             return redirect(url_for("view_admin"))
-        if "customer" in session.get("user").get("roles"):
+        if "customer" in roles:
             return redirect(url_for("view_customer"))
-        if "partner" in session.get("user").get("roles"):
+        if "partner" in roles:
             return redirect(url_for("view_partner"))
+        if "restaurant" in roles:
+            return redirect(url_for("view_restaurant"))
     return render_template("view_login.html", x=x, title="Login", message=request.args.get("message", ""))
 
 
@@ -95,8 +95,6 @@ def view_customer():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    if len(user.get("roles", "")) > 1:
-        return redirect(url_for("view_choose_role"))
     return render_template("view_customer.html", user=user)
 
 ##############################
@@ -106,8 +104,6 @@ def view_partner():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    if len(user.get("roles", "")) > 1:
-        return redirect(url_for("view_choose_role"))
     return render_template("view_partner.html", user=user)
 
 
@@ -147,18 +143,6 @@ def view_restaurant():
 
      # TODO: husk at close db again.
     
-##############################
-@app.get("/choose-role")
-@x.no_cache
-def view_choose_role():
-    if not session.get("user", ""):
-        return redirect(url_for("view_login"))
-    if not len(session.get("user").get("roles")) >= 2:
-        return redirect(url_for("view_login"))
-    user = session.get("user")
-    return render_template("view_choose_role.html", user=user, title="Choose role")
-    # TODO: evt. slet dette route
-
 
 ##############################
 
@@ -288,7 +272,9 @@ def signup_customer():
         x.send_verify_email(user_email, user_verification_key)
         db.commit()
 
-        return """<template mix-redirect="/login"></template>""", 201
+        # Redirect to login with a message
+        message = "Account created, please verify your account."
+        return f""""<template mix-redirect="/login?message={message}"></template>"""
 
     except Exception as ex:
         ic(ex)
@@ -301,11 +287,12 @@ def signup_customer():
             if "users.user_email" in str(ex):
                 toast = render_template("___toast.html", message="email not available")
                 return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", 400
-            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
         return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.post("/signup_partner")
@@ -505,10 +492,11 @@ def signup_restaurant():
 @app.post("/login")
 def login():
     try:
-
+        # Validate user inputs
         user_email = x.validate_user_email()
         user_password = x.validate_user_password()
 
+        # Query the database for the user
         db, cursor = x.db()
         q = """SELECT * FROM users WHERE user_email = %s"""
         cursor.execute(q, (user_email,))
@@ -529,8 +517,8 @@ def login():
         if not check_password_hash(user_row["user_password"], user_password):
             toast = render_template("___toast.html", message="Invalid credentials")
             return f"""<template mix-target="#toast">{toast}</template>""", 401
-        
-        
+
+        # Fetch roles for the user
         role_query = """SELECT * FROM users_roles 
                         JOIN roles ON role_pk = user_role_role_fk
                         WHERE user_role_user_fk = %s"""
@@ -539,6 +527,7 @@ def login():
 
         roles = [row["role_name"] for row in role_rows]
 
+        # Prepare user session data
         user = {
             "user_pk": user_row["user_pk"],
             "user_name": user_row["user_name"],
@@ -548,9 +537,11 @@ def login():
         }
         ic(user)
         session["user"] = user
+
+        # Redirect based on roles
         if len(roles) == 1:
             return f"""<template mix-redirect="/{roles[0]}"></template>"""
-        return f"""<template mix-redirect="/choose-role"></template>"""
+        return f"""<template mix-redirect="/"></template>"""
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
@@ -559,8 +550,9 @@ def login():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>System upgrating</template>", 500
+            return "<template>System upgrading</template>", 500
         return "<template>System under maintenance</template>", 500
+
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -618,7 +610,97 @@ def create_item():
 
 
 ##############################
-@app.post("/delete-user") ##JULIE: PUT
+@app.post("/forgot-password")
+def forgot_password():
+    try:
+        user_email = request.form.get("user_email")
+        if not user_email:
+            raise x.CustomException("Email is required", 400)
+
+        # Fetch user by email
+        db, cursor = x.db()
+        q = "SELECT user_pk FROM users WHERE user_email = %s AND user_deleted_at = 0"
+        cursor.execute(q, (user_email))
+        user = cursor.fetchone()
+
+        if not user:
+            raise x.CustomException("Email not found", 404)
+
+        # Generate a reset token
+        reset_token = str(uuid.uuid4())
+
+        # Store the reset token in the database
+        q = "UPDATE users SET user_verification_key = %s WHERE user_pk = %s"
+        cursor.execute(q, (reset_token, user["user_pk"]))
+        db.commit()
+
+        # Send the reset email (pass only the reset token)
+        x.send_reset_email(user_email, reset_token)
+
+
+        toast = render_template("___toast_ok.html", message="Reset email sent.")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+
+    except Exception as ex:
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+
+##############################
+@app.post("/reset_password")
+def update_password():
+    try:
+        user_pk = request.form.get("user_pk")
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+
+        if not user_pk or not new_password or not confirm_password:
+            raise x.CustomException("All fields are required", 400)
+
+        if new_password != confirm_password:
+            raise x.CustomException("Passwords do not match", 400)
+
+        # Hash the new password
+        hashed_password = generate_password_hash(new_password)
+
+        # Get the current epoch timestamp
+        updated_at = int(time.time())
+
+        # Update the user's password and updated_at in the database
+        db, cursor = x.db()
+        q = """
+            UPDATE users 
+            SET user_password = %s, user_updated_at = %s 
+            WHERE user_pk = %s
+        """
+        cursor.execute(q, (hashed_password, updated_at, user_pk))
+        db.commit()
+
+        print(f"Password updated successfully for user_pk: {user_pk}")  # Debugging
+        return redirect(url_for("view_login", message="Password updated, please login"))
+
+    except Exception as ex:
+        print(f"Error: {ex}")  # Debugging
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+
+##############################
+@app.post("/delete-user")
 def delete_user():
     try:
         user_pk = session.get("user", {}).get("user_pk")
@@ -671,9 +753,14 @@ def user_update():
         if not session.get("user"): x.raise_custom_exception("please login", 401)
 
         user_pk = session.get("user").get("user_pk")
+        roles = session.get("user").get("roles")
         user_name = x.validate_user_name()
-        user_last_name = x.validate_user_last_name()
         user_email = x.validate_user_email()
+
+        if "restaurant" in roles:
+            user_last_name = ""
+        else:
+            user_last_name = x.validate_user_last_name()
 
         user_updated_at = int(time.time())
 
@@ -690,7 +777,7 @@ def user_update():
             "user_name": user_name,
             "user_last_name": user_last_name,
             "user_email": user_email,
-            "roles": session.get("user").get("roles")
+            "roles": roles
         }  
 
         session["user"] = user  
@@ -769,12 +856,29 @@ def user_block(user_pk):
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         user_pk = x.validate_uuid4(user_pk)
         user_blocked_at = int(time.time())
-
         db, cursor = x.db()
         q = 'UPDATE users SET user_blocked_at = %s WHERE user_pk = %s'
         cursor.execute(q, (user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block user", 400)
         db.commit()
+        
+        # send the blocked user email and include the user_pk to the x function
+        x.send_blocked_email(user_pk = user_pk)
+        
+        # btn_unblock = render_template("___btn_unblock_user.html", user=user)
+        # toast = render_template("__toast.html", message="User blocked")
+        # return f"""
+        #         <template 
+        #         mix-target='#block-{user_pk}' 
+        #         mix-replace>
+        #             {btn_unblock}
+        #         </template>
+        #         <template mix-target="#toast" mix-bottom>
+        #             {toast}
+        #         </template>
+        #         """
+
+        # Kan det virkelig være rigtigt kan jeg skal redirect? Kan jeg ikke bare udskifte knappen?
         return f"""
                 <template mix-redirect="/admin"></template>
                 """
@@ -805,6 +909,13 @@ def user_unblock(user_pk):
         cursor.execute(q, (user_blocked_at, user_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock user", 400)
         db.commit()
+        
+        # send the unblocked user email and include the user_pk to the x function
+        x.send_unblocked_email(user_pk = user_pk)
+        # toast = render_template("___toast_ok.html", message="User unblocked")
+        # return f"""<template mix-target="#toast" mix-bottom>
+        #             {toast}
+        #         </template>"""
         return f"""
                 <template mix-redirect="/admin"></template>
                 """
@@ -832,12 +943,16 @@ def item_block(item_pk):
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         item_pk = x.validate_uuid4(item_pk)
         item_blocked_at = int(time.time())
-
+        
+        
         db, cursor = x.db()
         q = 'UPDATE items SET item_blocked_at = %s WHERE item_pk = %s'
         cursor.execute(q, (item_blocked_at, item_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block item", 400)
         db.commit()
+        
+        # send the blocked item email and include the item_pk to the x function
+        x.send_blocked_email(item_pk = item_pk)
         # btn_unblock = render_template("___btn_unblock_user.html", user=user)
         # toast = render_template("__toast.html", message="User blocked")
         # return f"""
@@ -882,6 +997,9 @@ def item_unblock(item_pk):
         cursor.execute(q, (item_blocked_at, item_pk))
         if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock item", 400)
         db.commit()
+        
+        # send the unblocked item email and include the item_pk to the x function
+        x.send_unblocked_email(item_pk = item_pk)
         # toast = render_template("___toast_ok.html", message="User unblocked")
         # return f"""<template mix-target="#toast" mix-bottom>
         #             {toast}
