@@ -950,7 +950,7 @@ def forgot_password():
         if cursor.rowcount != 1: x.raise_custom_exception("user not found", 400)
         db.commit()
 
-        # Send the reset email (pass only the reset token)
+        # Send the reset email
         x.send_reset_email(user_email, user_reset_password_key)
 
         toast = render_template("___toast_ok.html", message="Reset email sent.")

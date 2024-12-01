@@ -217,14 +217,14 @@ def validate_item_price():
     return float(price)  # Return the price as a float for further processing
 
 ##############################
-def send_reset_email(user_email, reset_token):
+def send_reset_email(user_email, user_reset_password_key):
     try:
         # Sender email and app password
         sender_email = "fullflaskdemoemailexam@gmail.com"
         password = "atxxbyhicjzrsnhs"  # App Password for Gmail (with 2FA enabled)
 
         # Construct the reset URL
-        reset_url = f"http://127.0.0.1/reset-password/{reset_token}"
+        reset_url = f"http://127.0.0.1/reset-password/{user_reset_password_key}"
 
         # Create the email message
         message = MIMEMultipart()
