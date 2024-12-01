@@ -610,50 +610,7 @@ def create_item():
 
 
 ##############################
-@app.post("/forgot-password")
-def forgot_password():
-    try:
-        user_email = request.form.get("user_email")
-        if not user_email:
-            raise x.CustomException("Email is required", 400)
 
-        # Fetch user by email
-        db, cursor = x.db()
-        q = "SELECT user_pk FROM users WHERE user_email = %s AND user_deleted_at = 0"
-        cursor.execute(q, (user_email))
-        user = cursor.fetchone()
-
-        if not user:
-            raise x.CustomException("Email not found", 404)
-
-        # Generate a reset token
-        reset_token = str(uuid.uuid4())
-
-        # Store the reset token in the database
-        q = "UPDATE users SET user_verification_key = %s WHERE user_pk = %s"
-        cursor.execute(q, (reset_token, user["user_pk"]))
-        db.commit()
-
-        # Send the reset email (pass only the reset token)
-        x.send_reset_email(user_email, reset_token)
-
-
-        toast = render_template("___toast_ok.html", message="Reset email sent.")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
-
-    except Exception as ex:
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
 @app.post("/reset_password")
 def update_password():
     try:
