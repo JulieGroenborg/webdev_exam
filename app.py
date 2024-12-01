@@ -610,53 +610,6 @@ def create_item():
 
 
 ##############################
-
-@app.post("/reset_password")
-def update_password():
-    try:
-        user_pk = request.form.get("user_pk")
-        new_password = request.form.get("new_password")
-        confirm_password = request.form.get("confirm_password")
-
-        if not user_pk or not new_password or not confirm_password:
-            raise x.CustomException("All fields are required", 400)
-
-        if new_password != confirm_password:
-            raise x.CustomException("Passwords do not match", 400)
-
-        # Hash the new password
-        hashed_password = generate_password_hash(new_password)
-
-        # Get the current epoch timestamp
-        updated_at = int(time.time())
-
-        # Update the user's password and updated_at in the database
-        db, cursor = x.db()
-        q = """
-            UPDATE users 
-            SET user_password = %s, user_updated_at = %s 
-            WHERE user_pk = %s
-        """
-        cursor.execute(q, (hashed_password, updated_at, user_pk))
-        db.commit()
-
-        print(f"Password updated successfully for user_pk: {user_pk}")  # Debugging
-        return redirect(url_for("view_login", message="Password updated, please login"))
-
-    except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
 @app.post("/delete-user")
 def delete_user():
     try:
