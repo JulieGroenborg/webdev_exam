@@ -777,12 +777,102 @@ def user_block(user_pk):
         
         # send the blocked user email and include the user_pk to the x function
         x.send_blocked_email(user_pk = user_pk)
+
         user = {"user_pk":user_pk}
         btn_unblock = render_template("___btn_unblock_user.html", user=user)
         toast = render_template("___toast.html", message="User blocked")
         return f"""
                 <template 
                 mix-target='#block-{user_pk}' 
+                mix-replace>
+                    {btn_unblock}
+                </template>
+                <template mix-target="#toast" mix-bottom>
+                    {toast}
+                </template>
+                """
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return "<template>Database error</template>", 500
+        return "<template>System under maintenance</template>", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+
+##############################
+@app.put("/users/unblock/<user_pk>")
+def user_unblock(user_pk):
+    try:
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        user_pk = x.validate_uuid4(user_pk)
+        user_unblocked_at = 0
+        user_updated_at = int(time.time())
+
+        db, cursor = x.db()
+        q = 'UPDATE users SET user_blocked_at = %s, user_updated_at = %s WHERE user_pk = %s'
+        cursor.execute(q, (user_unblocked_at, user_updated_at, user_pk))
+        if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock user", 400)
+        db.commit()
+        
+        # send the unblocked user email and include the user_pk to the x function
+        x.send_unblocked_email(user_pk = user_pk)
+        user = {"user_pk":user_pk}
+        btn_block = render_template("___btn_block_user.html", user=user)
+        toast = render_template("___toast_ok.html", message="User unblocked")
+        return f"""
+                <template 
+                mix-target='#unblock-{user_pk}' 
+                mix-replace>
+                    {btn_block}
+                </template>
+                <template mix-target="#toast" mix-bottom>
+                    {toast}
+                </template>
+                """
+    except Exception as ex:
+
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return "<template>Database error</template>", 500
+        return "<template>System under maintenance</template>", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+
+##############################
+@app.put("/items/block/<item_pk>")
+def item_block(item_pk):
+    try:
+        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        item_pk = x.validate_uuid4(item_pk)
+        item_blocked_at = int(time.time())
+        db, cursor = x.db()
+        q = 'UPDATE items SET item_blocked_at = %s, item_updated_at = %s WHERE item_pk = %s'
+        cursor.execute(q, (item_blocked_at, item_blocked_at, item_pk))
+        if cursor.rowcount != 1: x.raise_custom_exception("cannot block item", 400)
+        db.commit()
+        
+        # send the blocked item email and include the item_pk to the x function
+        x.send_blocked_email(item_pk = item_pk)
+
+        item = {"item_pk":item_pk}
+        btn_unblock = render_template("___btn_unblock_item.html", item=item)
+        toast = render_template("___toast.html", message="Item blocked")
+        return f"""
+                <template 
+                mix-target='#block-{item_pk}' 
                 mix-replace>
                     {btn_unblock}
                 </template>
@@ -807,26 +897,29 @@ def user_block(user_pk):
 
 
 ##############################
-@app.put("/users/unblock/<user_pk>")
-def user_unblock(user_pk):
+@app.put("/items/unblock/<item_pk>")
+def item_unblock(item_pk):
     try:
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
-        user_pk = x.validate_uuid4(user_pk)
-        user_blocked_at = 0
+        item_pk = x.validate_uuid4(item_pk)
+        item_unblocked_at = 0
+        item_updated_at = int(time.time())
+
         db, cursor = x.db()
-        q = 'UPDATE users SET user_blocked_at = %s WHERE user_pk = %s'
-        cursor.execute(q, (user_blocked_at, user_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock user", 400)
+        q = 'UPDATE items SET item_blocked_at = %s, item_updated_at = %s WHERE item_pk = %s'
+        cursor.execute(q, (item_unblocked_at, item_updated_at, item_pk))
+        if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock item", 400)
         db.commit()
         
-        # send the unblocked user email and include the user_pk to the x function
-        x.send_unblocked_email(user_pk = user_pk)
-        user = {"user_pk":user_pk}
-        btn_block = render_template("___btn_block_user.html", user=user)
-        toast = render_template("___toast_ok.html", message="User unblocked")
+        # send the unblocked item email and include the item_pk to the x function
+        x.send_unblocked_email(item_pk = item_pk)
+
+        item = {"item_pk":item_pk}
+        btn_block = render_template("___btn_block_item.html", item=item)
+        toast = render_template("___toast_ok.html", message="Item unblocked")
         return f"""
                 <template 
-                mix-target='#unblock-{user_pk}' 
+                mix-target='#unblock-{item_pk}' 
                 mix-replace>
                     {btn_block}
                 </template>
@@ -834,96 +927,6 @@ def user_unblock(user_pk):
                     {toast}
                 </template>
                 """
-        
-
-    except Exception as ex:
-
-        ic(ex)
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
-        if isinstance(ex, x.mysql.connector.Error):
-            ic(ex)
-            return "<template>Database error</template>", 500
-        return "<template>System under maintenance</template>", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
-@app.put("/items/block/<item_pk>")
-def item_block(item_pk):
-    try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
-        item_pk = x.validate_uuid4(item_pk)
-        item_blocked_at = int(time.time())
-        
-        
-        db, cursor = x.db()
-        q = 'UPDATE items SET item_blocked_at = %s WHERE item_pk = %s'
-        cursor.execute(q, (item_blocked_at, item_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot block item", 400)
-        db.commit()
-        
-        # send the blocked item email and include the item_pk to the x function
-        x.send_blocked_email(item_pk = item_pk)
-        # btn_unblock = render_template("___btn_unblock_user.html", user=user)
-        # toast = render_template("__toast.html", message="User blocked")
-        # return f"""
-        #         <template 
-        #         mix-target='#block-{user_pk}' 
-        #         mix-replace>
-        #             {btn_unblock}
-        #         </template>
-        #         <template mix-target="#toast" mix-bottom>
-        #             {toast}
-        #         </template>
-        #         """
-
-        # Kan det virkelig være rigtigt kan jeg skal redirect? Kan jeg ikke bare udskifte knappen?
-        return f"""
-                <template mix-redirect="/admin"></template>
-                """
-
-    except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
-        if isinstance(ex, x.mysql.connector.Error):
-            ic(ex)
-            return "<template>Database error</template>", 500
-        return "<template>System under maintenance</template>", 500
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
-@app.put("/items/unblock/<item_pk>")
-def item_unblock(item_pk):
-    try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
-        item_pk = x.validate_uuid4(item_pk)
-        item_blocked_at = 0
-        db, cursor = x.db()
-        q = 'UPDATE items SET item_blocked_at = %s WHERE item_pk = %s'
-        cursor.execute(q, (item_blocked_at, item_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock item", 400)
-        db.commit()
-        
-        # send the unblocked item email and include the item_pk to the x function
-        x.send_unblocked_email(item_pk = item_pk)
-        # toast = render_template("___toast_ok.html", message="User unblocked")
-        # return f"""<template mix-target="#toast" mix-bottom>
-        #             {toast}
-        #         </template>"""
-        return f"""
-                <template mix-redirect="/admin"></template>
-                """
-
     except Exception as ex:
 
         ic(ex)
