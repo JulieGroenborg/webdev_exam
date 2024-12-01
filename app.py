@@ -654,60 +654,6 @@ def forgot_password():
 
 
 ##############################
-
-@app.put("/reset-password/<user_reset_password_key>") #should it be a post or put?
-def new_password(user_reset_password_key):
-    try:
-        user_reset_password_key = x.validate_uuid4(user_reset_password_key)
-        user_password = x.validate_user_password()
-        user_repeat_password = request.form.get("user_repeat_password", "")
-        if user_password != user_repeat_password: x.raise_custom_exception("password do not match", 400)
-        
-        user_updated_at = int(time.time())
-        hashed_password = generate_password_hash(user_password)
-
-        db, cursor = x.db()
-        q = ("""    UPDATE users
-                    SET user_password = %s, user_updated_at = %s
-                    WHERE user_reset_password_key = %s""")
-        cursor.execute(q, (hashed_password, user_updated_at, user_reset_password_key))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot save password", 400) 
-
-        # The user_reset_password_key is sat to 0, so the user can't keep on updating the password
-        cursor.execute("""
-         UPDATE users
-         SET user_reset_password_key = 0
-         WHERE user_reset_password_key = %s
-        """, (user_reset_password_key,))
-
-
-        db.commit()
-        toast = render_template("___toast_ok.html", message="Password updated")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>
-        <template mix-target="#user_password" mix-replace>
-            <input type="password" id="user_password" name="user_password" value="">
-        </template>
-        <template mix-target="#user_repeat_password" mix-replace>
-            <input type="password" id="user_repeat_password" name="user_repeat_password" value="">
-        </template>"""
-
-    
-    except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException): 
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
-        if isinstance(ex, x.mysql.connector.Error):
-            ic(ex)
-            return "<template>System upgrating</template>", 500        
-        return "<template>System under maintenance</template>", 500  
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
 @app.post("/delete-user")
 def delete_user():
     try:
@@ -997,6 +943,57 @@ def item_unblock(item_pk):
 
 
 ##############################
+@app.put("/reset-password/<user_reset_password_key>")
+def new_password(user_reset_password_key):
+    try:
+        user_reset_password_key = x.validate_uuid4(user_reset_password_key)
+        user_password = x.validate_user_password()
+        user_repeat_password = request.form.get("user_repeat_password", "")
+        if user_password != user_repeat_password: x.raise_custom_exception("password do not match", 400)
+        
+        user_updated_at = int(time.time())
+        hashed_password = generate_password_hash(user_password)
+
+        db, cursor = x.db()
+        q = ("""    UPDATE users
+                    SET user_password = %s, user_updated_at = %s
+                    WHERE user_reset_password_key = %s""")
+        cursor.execute(q, (hashed_password, user_updated_at, user_reset_password_key))
+        if cursor.rowcount != 1: x.raise_custom_exception("cannot save password", 400) 
+
+        # The user_reset_password_key is sat to 0, so the user can't keep on updating the password
+        cursor.execute("""
+         UPDATE users
+         SET user_reset_password_key = 0
+         WHERE user_reset_password_key = %s
+        """, (user_reset_password_key,))
+
+
+        db.commit()
+        toast = render_template("___toast_ok.html", message="Password updated")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>
+        <template mix-target="#user_password" mix-replace>
+            <input type="password" id="user_password" name="user_password" value="">
+        </template>
+        <template mix-target="#user_repeat_password" mix-replace>
+            <input type="password" id="user_repeat_password" name="user_repeat_password" value="">
+        </template>"""
+
+    
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException): 
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return "<template>System upgrating</template>", 500        
+        return "<template>System under maintenance</template>", 500  
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
 
 ##############################
 ##############################
