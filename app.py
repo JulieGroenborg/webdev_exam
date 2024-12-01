@@ -266,14 +266,15 @@ def signup_customer():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        user_reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -327,14 +328,15 @@ def signup_partner():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        user_reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -387,14 +389,15 @@ def signup_restaurant():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        user_reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -615,46 +618,7 @@ def create_item():
 
 
 ##############################
-@app.post("/forgot-password")
-def forgot_password():
-    try:
-        user_email = x.validate_user_email()
-        db, cursor = x.db()
-        user_reset_password_key = str(uuid.uuid4())
-        
-        q = """ UPDATE users
-                SET user_reset_password_key = %s
-                WHERE user_email = %s
-                """
-
-        cursor.execute(q, (user_reset_password_key, user_email))
-        if cursor.rowcount != 1: x.raise_custom_exception("user not found", 400)
-        db.commit()
-
-        # Send the reset email (pass only the reset token)
-        x.send_reset_email(user_email, user_reset_password_key)
-
-        toast = render_template("___toast_ok.html", message="Reset email sent.")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
-        
-    except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException): 
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
-        if isinstance(ex, x.mysql.connector.Error):
-            ic(ex)
-            return "<template>System upgrating</template>", 500        
-        return "<template>System under maintenance</template>", 500 
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
-##############################
-@app.post("/delete-user")
+@app.post("/delete-user") ##JULIE: PUT
 def delete_user():
     try:
         user_pk = session.get("user", {}).get("user_pk")
@@ -936,6 +900,46 @@ def item_unblock(item_pk):
             ic(ex)
             return "<template>Database error</template>", 500
         return "<template>System under maintenance</template>", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+
+
+##############################
+@app.put("/forgot-password")
+def forgot_password():
+    try:
+        user_email = x.validate_user_email()
+        db, cursor = x.db()
+        user_reset_password_key = str(uuid.uuid4())
+        
+        q = """ UPDATE users
+                SET user_reset_password_key = %s
+                WHERE user_email = %s
+                """
+
+        cursor.execute(q, (user_reset_password_key, user_email))
+        if cursor.rowcount != 1: x.raise_custom_exception("user not found", 400)
+        db.commit()
+
+        # Send the reset email (pass only the reset token)
+        x.send_reset_email(user_email, user_reset_password_key)
+
+        toast = render_template("___toast_ok.html", message="Reset email sent.")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException): 
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return "<template>System upgrating</template>", 500        
+        return "<template>System under maintenance</template>", 500 
 
     finally:
         if "cursor" in locals(): cursor.close()
