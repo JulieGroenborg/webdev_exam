@@ -251,3 +251,42 @@ def send_reset_email(user_email, reset_token):
 
     except Exception as ex:
         raise CustomException("Cannot send email", 500)
+    
+##############################
+def send_delete_email(to_email, delete_key):
+    try:
+        # Create a gmail fullflaskdemomail
+        # Enable (turn on) 2 step verification/factor in the google account manager
+        # Visit: https://myaccount.google.com/apppasswords
+        # My key/password: atxxbyhicjzrsnhs  
+
+        # Email and password of the sender's Gmail account
+        sender_email = "fullflaskdemoemailexam@gmail.com"
+        password = "atxxbyhicjzrsnhs"  # If 2FA is on, use an App Password instead
+
+        # Receiver email address
+        receiver_email = "fullflaskdemoemailexam@gmail.com"
+        
+        # Create the email message
+        message = MIMEMultipart()
+        message["From"] = "My company name"
+        message["To"] = receiver_email
+        message["Subject"] = "Please confirm the deletion of your account"
+
+        # Body of the email
+        body = f"""To confirm the deletion of your account, please <a href="http://127.0.0.1/verify/{delete_key}">click here</a>"""
+        message.attach(MIMEText(body, "html"))
+
+        # Connect to Gmail's SMTP server and send the email
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # Upgrade the connection to secure
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully!")
+
+        return "email sent"
+    
+    except Exception as ex:
+        raise_custom_exception("cannot send email", 500)
+    finally:
+        pass

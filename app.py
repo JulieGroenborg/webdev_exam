@@ -541,7 +541,7 @@ def create_item():
         item_blocked_at = 0
         item_updated_at = 0
 
-         # Validate and save multiple images from a single input
+        # Validate and save multiple images from a single input
         files = request.files.getlist("item_images")  # Retrieve multiple files
         if len(files) != 3:
             raise x.CustomException("Exactly 3 images are required", 400)
@@ -668,14 +668,13 @@ def update_password():
 
 
 ##############################
-@app.post("/delete-user")
+@app.put("/delete-user")
 def delete_user():
     try:
-        user_pk = session.get("user", {}).get("user_pk")
-        if not user_pk:
-            raise x.CustomException("User not logged in", 403)
+        if not session.get("user"): x.raise_custom_exception("please login", 401)
 
-        deleted_at = int(time.time())
+        user_pk = session.get("user").get("user_pk")
+        user_deleted_at = int(time.time())
 
         db, cursor = x.db()
         q = """
@@ -683,7 +682,7 @@ def delete_user():
             SET user_deleted_at = %s 
             WHERE user_pk = %s
         """
-        cursor.execute(q, (deleted_at, user_pk))
+        cursor.execute(q, (user_deleted_at, user_pk))
         db.commit()
 
         print(f"User soft-deleted successfully for user_pk: {user_pk}") 
@@ -691,6 +690,8 @@ def delete_user():
         session.clear()
 
         print(f"User succesfully deleted for user_pk: {user_pk}") 
+        toast = render_template("___toast_ok.html", message="user deleted")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
         return redirect(url_for("view_login", message="User succesfully deleted"))
 
     except Exception as ex:
@@ -749,9 +750,7 @@ def user_update():
         }  
 
         session["user"] = user  
-
-        toast = render_template("___toast_ok.html", message="User updated")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        return f"""<template mix-redirect="/profile"></template>"""
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
@@ -1098,4 +1097,32 @@ def reset_password(token):
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+##############################
+# @app.get("/confirm_delete/<delete_key>")
+# @x.no_cache
+# def confirm_delete_user(delete_key):
+#     try:
+#         ic(delete_key)
+#         delete_key = x.validate_uuid4(delete_key)
+#         user_verified_at = int(time.time())
 
+#         db, cursor = x.db()
+#         q = """ UPDATE users
+#                 SET user_verified_at = %s
+#                 WHERE user_verification_key = %s"""
+#         cursor.execute(q, (user_verified_at, delete_key))
+#         if cursor.rowcount != 1: x.raise_custom_exception("cannot verify account", 400)
+#         db.commit()
+#         return redirect(url_for("view_login", message="User verified, please login"))
+
+#     except Exception as ex:
+#         ic(ex)
+#         if "db" in locals(): db.rollback()
+#         if isinstance(ex, x.CustomException): return ex.message, ex.code
+#         if isinstance(ex, x.mysql.connector.Error):
+#             ic(ex)
+#             return "Database under maintenance", 500
+#         return "System under maintenance", 500
+#     finally:
+#         if "cursor" in locals(): cursor.close()
+#         if "db" in locals(): db.close()
