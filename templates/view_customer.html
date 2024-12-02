@@ -1,14 +1,18 @@
 {% include "_top_logged.html" %}
 
-<main class="w-full">
-    Du er logget ind som customer
-    <h2>Restaurants and Their Items</h2>
-    {% for restaurant in restaurants %}
-    <div>
-        <a href="{{ url_for('view_restaurant_items', restaurant_id=restaurant['user_pk']) }}">{{ restaurant['user_name']
-            }} ({{ restaurant['user_email'] }})</a>
-    </div>
-    {% endfor %}
+<main class="w-full d-flex">
+    <div id="map" class="w-50% h-100vh"></div>
+    <section>
+        Du er logget ind som customer
+        <h2>Restaurants</h2>
+        {% for restaurant in restaurants %}
+        <div>
+            <a href="{{ url_for('view_restaurant_items', restaurant_id=restaurant['user_pk']) }}">{{
+                restaurant['user_name']
+                }} ({{ restaurant['user_email'] }})</a>
+        </div>
+        {% endfor %}
+    </section>
 </main>
 
 

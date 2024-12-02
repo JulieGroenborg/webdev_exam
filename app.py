@@ -7,6 +7,7 @@ import uuid
 import time
 import redis
 import os
+import random
 
 from icecream import ic
 ic.configureOutput(prefix=f'***** | ', includeContext=True)
@@ -106,6 +107,23 @@ def view_customer():
     """)
     restaurants = cursor.fetchall()
 
+    # Function to generate random latitude and longitude within Copenhagen's bounds
+    def generate_random_coordinates():
+        # Latitude range for Copenhagen (approx. 55.61 to 55.73)
+        lat = random.uniform(55.61, 55.73)
+        # Longitude range for Copenhagen (approx. 12.48 to 12.65)
+        lon = random.uniform(12.48, 12.65)
+        # Return the generated latitude and longitude as a tuple
+        return lat, lon
+
+    # Iterate through the list of restaurants and generate random coordinates for all
+    for restaurant in restaurants:
+        lat, lon = generate_random_coordinates()  # Generate random coordinates for every restaurant
+        restaurant['latitude'] = lat  # Assign latitude
+        restaurant['longitude'] = lon  # Assign longitude
+        ic("Restaurant latitude:", lat)  # Debugging output
+        ic("Restaurant longitude:", lon)  # Debugging output
+    
     return render_template("view_customer.html", user=user, restaurants=restaurants)
 
 ##############################
