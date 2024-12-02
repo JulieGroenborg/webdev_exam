@@ -276,10 +276,12 @@ def send_blocked_email(user_pk=None, item_pk=None):
 
         if user_pk:
             message["Subject"] = "User blocked from Viento"
-            body = f"User with ID {user_pk} has been blocked from Viento."
+            body = f"""<p> User with ID {user_pk} has been blocked from Viento.</p>  
+                       <p> Please contact an admin if you think this is a mistake or you require further information. </p>"""
         elif item_pk:
             message["Subject"] = "Item blocked from Viento"
-            body = f"Item with ID {item_pk} has been blocked from Viento."
+            body = f"""<p> User with ID {item_pk} has been blocked from Viento.</p>  
+                       <p> Please contact an admin if you think this is a mistake or you require further information. </p>"""
         else:
             raise ValueError("Either user_pk or item_pk must be provided.")
 
@@ -328,10 +330,10 @@ def send_unblocked_email(user_pk=None, item_pk=None):
         # if the route sends a user_pk it will send the user body, and the same for item_pk if it's sent.
         if user_pk:
             message["Subject"] = "User unblocked from Viento"
-            body = f"User with ID {user_pk} has been unblocked from Viento."
+            body = f"""<p> User with ID {user_pk} has been unblocked from Viento.  </p> """
         elif item_pk:
             message["Subject"] = "Item unblocked from Viento"
-            body = f"Item with ID {item_pk} has been unblocked from Viento."
+            body = f"""<p> Item with ID {item_pk} has been unblocked from Viento.  </p> """
         else:
             raise ValueError("Either user_pk or item_pk must be provided.")
 
