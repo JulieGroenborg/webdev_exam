@@ -9,7 +9,8 @@
         <div>
             <a href="{{ url_for('view_restaurant_items', restaurant_id=restaurant['user_pk']) }}">{{
                 restaurant['user_name']
-                }} ({{ restaurant['user_email'] }})</a>
+                }} ({{ restaurant['user_email'] }})
+                <img src="" alt=""></a>
         </div>
         {% endfor %}
     </section>

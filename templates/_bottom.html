@@ -65,7 +65,7 @@
         restaurants.forEach(function (restaurant) {
             var coords = [restaurant.latitude, restaurant.longitude];
             var marker = L.marker(coords).addTo(map);
-            var popupText = `Restaurant: ${restaurant.user_name}: <a href="/restaurant/details/${restaurant.id}">See items here</a>`;
+            var popupText = `Restaurant: <strong>${restaurant.user_name}</strong><br> <a href="/restaurant/${restaurant.user_pk}">See all items here</a>`;
             marker.bindPopup(popupText);
         });
     }
