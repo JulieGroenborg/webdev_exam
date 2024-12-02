@@ -221,14 +221,15 @@ def signup_customer():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
         )
 
         cursor.execute(
@@ -285,14 +286,15 @@ def signup_partner():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
         )
 
         cursor.execute(
@@ -344,15 +346,17 @@ def signup_restaurant():
         user_blocked_at = 0
         user_updated_at = 0
         user_verified_at = 0
+        user_last_name = ""
         user_verification_key = str(uuid.uuid4())
+        reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (user_pk, user_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+            (user_pk, user_name, user_last_name, user_email, hashed_password,
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
         )
 
         cursor.execute(
@@ -541,7 +545,7 @@ def create_item():
         item_blocked_at = 0
         item_updated_at = 0
 
-         # Validate and save multiple images from a single input
+        # Validate and save multiple images from a single input
         files = request.files.getlist("item_images")  # Retrieve multiple files
         if len(files) != 3:
             raise x.CustomException("Exactly 3 images are required", 400)
@@ -667,43 +671,7 @@ def update_password():
         if "db" in locals(): db.close()
 
 
-##############################
-@app.post("/delete-user")
-def delete_user():
-    try:
-        user_pk = session.get("user", {}).get("user_pk")
-        if not user_pk:
-            raise x.CustomException("User not logged in", 403)
 
-        deleted_at = int(time.time())
-
-        db, cursor = x.db()
-        q = """
-            UPDATE users 
-            SET user_deleted_at = %s 
-            WHERE user_pk = %s
-        """
-        cursor.execute(q, (deleted_at, user_pk))
-        db.commit()
-
-        print(f"User soft-deleted successfully for user_pk: {user_pk}") 
-
-        session.clear()
-
-        print(f"User succesfully deleted for user_pk: {user_pk}") 
-        return redirect(url_for("view_login", message="User succesfully deleted"))
-
-    except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
-        return """<template mix-target="#toast">System error occurred.</template>""", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
 
 ##############################
 ##############################
@@ -749,9 +717,7 @@ def user_update():
         }  
 
         session["user"] = user  
-
-        toast = render_template("___toast_ok.html", message="User updated")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        return f"""<template mix-redirect="/profile"></template>"""
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
@@ -765,6 +731,72 @@ def user_update():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
+##############################
+
+##############################
+@app.put("/delete")
+def delete_user():
+    try:
+        user_pk = session.get("user", {}).get("user_pk")
+        if not user_pk:
+            raise x.CustomException("User not logged in", 403)
+
+        db, cursor = x.db()
+        q = "SELECT user_password FROM users WHERE user_pk = %s"
+        cursor.execute(q, (user_pk,))
+        user = cursor.fetchone()
+
+        if not user:
+            raise x.CustomException("User not found", 404)
+
+        # Get hashed password
+        hashed_password = user["user_password"]
+        ic(hashed_password)
+
+        confirm_password = request.form.get("confirm_password")
+        # Ensure input isn't empty
+        if not confirm_password:
+            raise x.CustomException("Password is required to delete the account", 400)
+        ic(confirm_password)
+
+        # Verify the plain password against the hash
+        if not check_password_hash(hashed_password, confirm_password):
+            raise x.CustomException("Password is not correct", 400)
+
+        # Proceed with deletion
+        user_deleted_at = int(time.time())
+        db, cursor = x.db()
+        q = """
+            UPDATE users 
+            SET user_deleted_at = %s 
+            WHERE user_pk = %s
+        """
+        cursor.execute(q, (user_deleted_at, user_pk))
+        db.commit()
+
+        # Send confirmation email
+        x.send_confirm_delete()
+        # Clear session storage
+        session.clear()
+
+        toast = render_template("___toast_ok.html", message="E-mail sent")
+        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        #return redirect(url_for("view_index", message="E-mail sent"))
+        #return f"""<template mix-redirect="/"></template>"""
+
+    except Exception as ex:
+        print(f"Error: {ex}")  # Debugging
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        return """<template mix-target="#toast">System error occurred.</template>""", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+        
 
 ##############################
 
@@ -1110,5 +1142,3 @@ def reset_password(token):
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
-
-
