@@ -106,10 +106,7 @@ def view_customer():
     """)
     restaurants = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC")
-    items = cursor.fetchall()
-
-    return render_template("view_customer.html", user=user, items=items, restaurants=restaurants)
+    return render_template("view_customer.html", user=user, restaurants=restaurants)
 
 ##############################
 @app.get("/restaurant-items")
