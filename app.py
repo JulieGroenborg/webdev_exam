@@ -124,6 +124,7 @@ def view_customer():
         ic("Restaurant latitude:", lat)  # Debugging output
         ic("Restaurant longitude:", lon)  # Debugging output
     
+    ic("This is restaurant", restaurants)
     return render_template("view_customer.html", user=user, restaurants=restaurants)
 
 ##############################
