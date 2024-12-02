@@ -668,14 +668,37 @@ def update_password():
 
 
 ##############################
-@app.put("/delete-user")
+@app.put("/delete")
 def delete_user():
     try:
-        if not session.get("user"): x.raise_custom_exception("please login", 401)
+        user_pk = session.get("user", {}).get("user_pk")
+        if not user_pk:
+            raise x.CustomException("User not logged in", 403)
 
-        user_pk = session.get("user").get("user_pk")
+        db, cursor = x.db()
+        q = "SELECT user_password FROM users WHERE user_pk = %s"
+        cursor.execute(q, (user_pk,))
+        user = cursor.fetchone()
+
+        if not user:
+            raise x.CustomException("User not found", 404)
+
+        # Get hashed password
+        hashed_password = user["user_password"]
+        ic(hashed_password)
+
+        confirm_password = request.form.get("confirm_password")
+        # Ensure input isn't empty
+        if not confirm_password:
+            raise x.CustomException("Password is required to delete the account", 400)
+        ic(confirm_password)
+
+        # Verify the plain password against the hash
+        if not check_password_hash(hashed_password, confirm_password):
+            raise x.CustomException("Password is not correct", 400)
+
+        # Proceed with deletion
         user_deleted_at = int(time.time())
-
         db, cursor = x.db()
         q = """
             UPDATE users 
@@ -685,14 +708,15 @@ def delete_user():
         cursor.execute(q, (user_deleted_at, user_pk))
         db.commit()
 
-        print(f"User soft-deleted successfully for user_pk: {user_pk}") 
-
+        # Send confirmation email
+        x.send_confirm_delete()
+        # Clear session storage
         session.clear()
 
-        print(f"User succesfully deleted for user_pk: {user_pk}") 
-        toast = render_template("___toast_ok.html", message="user deleted")
+        toast = render_template("___toast_ok.html", message="E-mail sent")
         return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
-        return redirect(url_for("view_login", message="User succesfully deleted"))
+        #return redirect(url_for("view_index", message="E-mail sent"))
+        #return f"""<template mix-redirect="/"></template>"""
 
     except Exception as ex:
         print(f"Error: {ex}")  # Debugging
@@ -1109,33 +1133,3 @@ def reset_password(token):
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
-
-##############################
-# @app.get("/confirm_delete/<delete_key>")
-# @x.no_cache
-# def confirm_delete_user(delete_key):
-#     try:
-#         ic(delete_key)
-#         delete_key = x.validate_uuid4(delete_key)
-#         user_verified_at = int(time.time())
-
-#         db, cursor = x.db()
-#         q = """ UPDATE users
-#                 SET user_verified_at = %s
-#                 WHERE user_verification_key = %s"""
-#         cursor.execute(q, (user_verified_at, delete_key))
-#         if cursor.rowcount != 1: x.raise_custom_exception("cannot verify account", 400)
-#         db.commit()
-#         return redirect(url_for("view_login", message="User verified, please login"))
-
-#     except Exception as ex:
-#         ic(ex)
-#         if "db" in locals(): db.rollback()
-#         if isinstance(ex, x.CustomException): return ex.message, ex.code
-#         if isinstance(ex, x.mysql.connector.Error):
-#             ic(ex)
-#             return "Database under maintenance", 500
-#         return "System under maintenance", 500
-#     finally:
-#         if "cursor" in locals(): cursor.close()
-#         if "db" in locals(): db.close()
