@@ -1,32 +1,21 @@
 {% include "_top_logged.html" %}
 
 <div class="d-flex">
-    <section class="w-40%">
-        <h2>All Items</h2>
-        {% for item in items %}
-            <div class="d-flex w-50% j-content-between mb-5 mt-5">
-                <p>{{ item['item_title'] }}</p>
-            </div>
-        {% endfor %}
-    </section>
-
-    <section class="w-40%">
+    <section class="w-100%">
         <h2>Restaurants and Their Items</h2>
         {% for restaurant in restaurants %}
-            <div>
+            <div class="restaurant-section">
                 <h3>{{ restaurant['user_name'] }} ({{ restaurant['user_email'] }})</h3>
                 <ul>
                     {% for item in items %}
                         {% if item['item_user_fk'] == restaurant['user_pk'] %}
                             <li>{{ item['item_title'] }}</li>
-                        {% endif %}
-                    {% endfor %}
+                        {% endfor %}
                 </ul>
             </div>
         {% endfor %}
     </section>
 </div>
-
 
 <script src="{{url_for('static', filename='mixhtml.js')}}"></script>
 
@@ -42,7 +31,6 @@
         },
     })
 </script>
-
 
 </body>
 </html>
