@@ -128,27 +128,47 @@ def view_customer():
     return render_template("view_customer.html", user=user, restaurants=restaurants)
 
 ##############################
-@app.get("/restaurant-items")
-@x.no_cache
-def view_restaurant_items():
+@app.get("/restaurant/<uuid:restaurant_id>")
+def view_restaurant_items(restaurant_id):
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
     db, cursor = x.db()
 
-    # i used something called a subquery here, so it is easier to understand for us. otherwise the query is not very easy to read
+    # Fetch the specific restaurant by its UUID
     cursor.execute("""
-        SELECT * FROM users WHERE user_pk IN (
-        SELECT user_role_user_fk FROM users_roles
-        JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
-        WHERE roles.role_name = 'restaurant')
-    """)
-    restaurants = cursor.fetchall()
+        SELECT * FROM users 
+        WHERE user_pk = %s 
+        AND user_pk IN (
+            SELECT user_role_user_fk 
+            FROM users_roles
+            WHERE user_role_role_fk = (
+                SELECT role_pk FROM roles WHERE role_name = 'restaurant'
+            )
+        )
+    """, (str(restaurant_id),))  # Pass UUID as string in tuple
 
-    cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC")
+    print("Restaurant ID:", str(restaurant_id))
+
+    restaurant = cursor.fetchone()
+
+    # Handle case where restaurant does not exist
+    if not restaurant:
+        return "Restaurant not found", 404
+
+    # Fetch items for this specific restaurant
+    cursor.execute("""
+        SELECT item_title
+        FROM items 
+        WHERE item_user_fk = %s
+    """, (str(restaurant_id),))  # Pass UUID as string in tuple
+
     items = cursor.fetchall()
 
-    return render_template("view_restaurant_items.html", user=user, items=items, restaurants=restaurants)
+    return render_template("view_restaurants_items.html", user=user, restaurant=restaurant, items=items)
+
+
+
 
 
 ##############################
@@ -703,6 +723,55 @@ def delete_user():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
+##############################
+@app.post("/restaurant/<uuid:restaurant_id>/add_to_basket")
+@x.no_cache
+def add_to_basket(restaurant_id):
+    try:
+
+        if "basket" not in session:
+            session["basket"] = []
+
+        item_title = request.form.get("item_title")
+        if not item_title:
+            raise x.CustomException("Item title is required", 400)
+
+        session["basket"].append(item_title)
+        session.modified = True
+        ic("jegkommerhertil")
+        return render_template("view_restaurants_items.html", restaurant_id=restaurant_id)
+
+    except Exception as ex:
+        ic(ex)
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+
+##############################
+@app.post("/buy_all")
+@x.no_cache
+def buy_all():
+    try:
+        if "basket" not in session or not session["basket"]:
+            raise x.CustomException("Basket is empty", 400)
+
+        items = session["basket"]
+
+        x.send_order_email(items)
+
+        session["basket"] = []
+        session.modified = True
+
+        return """<template mix-target="#toast" mix-bottom>Order placed successfully!</template>""", 200
+
+    except Exception as ex:
+        ic(ex)
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
 
 ##############################
 ##############################
