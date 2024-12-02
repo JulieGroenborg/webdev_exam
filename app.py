@@ -221,14 +221,15 @@ def signup_customer():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
         )
 
         cursor.execute(
@@ -285,14 +286,15 @@ def signup_partner():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
+        reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
         )
 
         cursor.execute(
@@ -344,15 +346,17 @@ def signup_restaurant():
         user_blocked_at = 0
         user_updated_at = 0
         user_verified_at = 0
+        user_last_name = ""
         user_verification_key = str(uuid.uuid4())
+        reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (user_pk, user_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key),
+            (user_pk, user_name, user_last_name, user_email, hashed_password,
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
         )
 
         cursor.execute(
@@ -667,6 +671,69 @@ def update_password():
         if "db" in locals(): db.close()
 
 
+
+
+##############################
+##############################
+##############################
+
+def _________PUT_________(): pass
+
+##############################
+##############################
+##############################
+
+@app.put("/users")
+def user_update():
+    try:
+        if not session.get("user"): x.raise_custom_exception("please login", 401)
+
+        user_pk = session.get("user").get("user_pk")
+        roles = session.get("user").get("roles")
+        user_name = x.validate_user_name()
+        user_email = x.validate_user_email()
+
+        if "restaurant" in roles:
+            user_last_name = ""
+        else:
+            user_last_name = x.validate_user_last_name()
+
+        user_updated_at = int(time.time())
+
+        db, cursor = x.db()
+        q = """ UPDATE users
+                SET user_name = %s, user_last_name = %s, user_email = %s, user_updated_at = %s
+                WHERE user_pk = %s
+            """
+        cursor.execute(q, (user_name, user_last_name, user_email, user_updated_at, user_pk))
+        if cursor.rowcount != 1: x.raise_custom_exception("cannot update user", 401)
+        db.commit()
+        user = {
+            "user_pk":user_pk,
+            "user_name": user_name,
+            "user_last_name": user_last_name,
+            "user_email": user_email,
+            "roles": roles
+        }  
+
+        session["user"] = user  
+        return f"""<template mix-redirect="/profile"></template>"""
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            if "users.user_email" in str(ex): return "<template>email not available</template>", 400
+            return "<template>System upgrating</template>", 500
+        return "<template>System under maintenance</template>", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
+
 ##############################
 @app.put("/delete")
 def delete_user():
@@ -729,65 +796,7 @@ def delete_user():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
-
-##############################
-##############################
-##############################
-
-def _________PUT_________(): pass
-
-##############################
-##############################
-##############################
-
-@app.put("/users")
-def user_update():
-    try:
-        if not session.get("user"): x.raise_custom_exception("please login", 401)
-
-        user_pk = session.get("user").get("user_pk")
-        roles = session.get("user").get("roles")
-        user_name = x.validate_user_name()
-        user_email = x.validate_user_email()
-
-        if "restaurant" in roles:
-            user_last_name = ""
-        else:
-            user_last_name = x.validate_user_last_name()
-
-        user_updated_at = int(time.time())
-
-        db, cursor = x.db()
-        q = """ UPDATE users
-                SET user_name = %s, user_last_name = %s, user_email = %s, user_updated_at = %s
-                WHERE user_pk = %s
-            """
-        cursor.execute(q, (user_name, user_last_name, user_email, user_updated_at, user_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot update user", 401)
-        db.commit()
-        user = {
-            "user_pk":user_pk,
-            "user_name": user_name,
-            "user_last_name": user_last_name,
-            "user_email": user_email,
-            "roles": roles
-        }  
-
-        session["user"] = user  
-        return f"""<template mix-redirect="/profile"></template>"""
-    except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        if isinstance(ex, x.mysql.connector.Error):
-            if "users.user_email" in str(ex): return "<template>email not available</template>", 400
-            return "<template>System upgrating</template>", 500
-        return "<template>System under maintenance</template>", 500
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        
 
 ##############################
 

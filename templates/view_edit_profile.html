@@ -30,6 +30,12 @@
             </button>
             <div id="overlay"></div>
             <div id="dialog" class="j-self-center">
+                <a href="{{url_for('view_index')}}" class="cursor-pointer ml-10 d-flex a-items-center gap-2 text-c-(#00C2E8)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                    </svg>
+                    Return to Home
+                </a>
                 <h2 class="text-a-center">Enter password to delete your account</h2>
                 <div class="d-flex flex-col">
                     <label for="confirm_password" class="d-flex">
@@ -37,7 +43,7 @@
                     </label>
                     <input name="confirm_password" type="text" mix-check="{{ x.REGEX_USER_PASSWORD }}">
                 </div>
-                <button mix-put="/delete" mix-data="#frm_user_delete" class="bg-c-(#00C2E8) text-c-(#EBF7FD) py-5 px-8">Delete account</button>
+                <button mix-put="/delete" id="delete" mix-data="#frm_user_delete" class="bg-c-(#00C2E8) text-c-(#EBF7FD) py-5 px-8">Delete account</button>
                 <button id="closeDialog" class="bg-c-(#EBF7FD) text-c-(#00C2E8) py-5 px-8 border-1 border-c-(#00C2E8)">Keep your account</button>
             </div>
         </form>

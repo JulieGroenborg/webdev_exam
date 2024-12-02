@@ -10,3 +10,4 @@ document.getElementById("closeDialog").addEventListener("click", () => {
     document.getElementById("dialog").style.display = "none";
     document.getElementById("overlay").style.display = "none";
 });
+
