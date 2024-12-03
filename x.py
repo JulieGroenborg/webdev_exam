@@ -413,7 +413,7 @@ def send_order_email(items):
 
         # Create the email body with the order details
         body = f"""
-        <p>A customer has placed an order with the following items:</p>
+        <p>Your order has been recieved and your food is on the way!</p>
         <ul>
         """
         for item in items:

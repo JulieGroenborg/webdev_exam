@@ -675,7 +675,6 @@ def create_item():
 @x.no_cache
 def add_to_basket(restaurant_id):
     try:
-
         if "basket" not in session:
             session["basket"] = []
 
@@ -685,8 +684,9 @@ def add_to_basket(restaurant_id):
 
         session["basket"].append(item_title)
         session.modified = True
-        ic("jegkommerhertil")
-        return render_template("view_restaurants_items.html", restaurant_id=restaurant_id)
+
+        updated_basket = render_template("___basket.html", basket=session["basket"])
+        return f"""<template mix-target="#basket" mix-replace>{updated_basket}</template>"""
 
     except Exception as ex:
         ic(ex)
@@ -694,6 +694,7 @@ def add_to_basket(restaurant_id):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+
 
 ##############################
 @app.post("/buy_all")
@@ -709,11 +710,12 @@ def buy_all():
 
         session["basket"] = []
         session.modified = True
-
-        return """<template mix-target="#toast" mix-bottom>Order placed successfully!</template>""", 200
+        toast = render_template("___toast_ok.html", message="Order placed successfully!")
+        return f"""<template mix-target="#basket" mix-replace><ul id="basket"></ul></template>
+                    <template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
-        ic(ex)
+        ic(ex)  # Debug log
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
