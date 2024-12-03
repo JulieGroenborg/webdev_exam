@@ -1,36 +1,45 @@
 {% include "_top_logged.html" %}
 
-<div class="d-flex">
-    <section class="w-100%">
-        <h2>Restaurants and Their Items</h2>
-        {% for restaurant in restaurants %}
-            <div class="restaurant-section">
-                <h3>{{ restaurant['user_name'] }} ({{ restaurant['user_email'] }})</h3>
-                <ul>
-                    {% for item in items %}
-                        {% if item['item_user_fk'] == restaurant['user_pk'] %}
-                            <li>{{ item['item_title'] }}</li>
-                        {% endfor %}
-                </ul>
-            </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Items</title>
+</head>
+<body>
+    <h1>{{ restaurant['user_name'] }}</h1>
+    <ul>
+        {% for item in items %}
+            <li>
+                {{ item['item_title'] }}
+                <form id="frm-add-basket-{{ loop.index }}">
+                    <input type="hidden" name="item_title" value="{{ item['item_title'] }}">
+                    <button 
+                        mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" 
+                        mix-data="#frm-add-basket-{{ loop.index }}" 
+                        mix-target="#basket">
+                        Put item in basket
+                    </button>
+                </form>
+            </li>
         {% endfor %}
-    </section>
-</div>
+    </ul>
+    
+    
 
-<script src="{{url_for('static', filename='mixhtml.js')}}"></script>
+    <h2>Your Basket</h2>
+    <ul id="basket">
+        {% for item in session.get('basket', []) %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
 
-<script>
-    mojo({
-        patterns: {
-            "input": {
-                idle: "border border-1 border-c-gray:+25 px-2 rounded-4 h-12 outline-none"
-            },
-            "button": {
-                idle: "border-c-black px-4 rounded-sm h-12 outline-none"
-            }
-        },
-    })
-</script>
+    <form id="frm-buy-all">
+        <button 
+            mix-post="{{ url_for('buy_all') }}" 
+            mix-data="#frm-buy-all" 
+            mix-target="#basket">
+            Buy All
+        </button>
+    </form>
 
-</body>
-</html>
+{% include "_bottom.html" %}

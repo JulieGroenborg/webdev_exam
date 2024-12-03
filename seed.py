@@ -26,7 +26,7 @@ def insert_user(user):
 
 
 
-try:
+# try:
 
 
     
@@ -50,73 +50,73 @@ try:
             user_updated_at INTEGER UNSIGNED,
             user_verified_at INTEGER UNSIGNED,
             user_verification_key CHAR(36),
-            restet_password_key CHAR(36),
+            user_reset_password_key CHAR(36),
             PRIMARY KEY(user_pk)
         )
         """        
     cursor.execute(q)
 
 
-    ##############################
+#     ##############################
     
-    q = """
-        CREATE TABLE items (
-            item_pk CHAR(36),
-            item_user_fk CHAR(36),
-            item_title VARCHAR(50) NOT NULL,
-            item_price DECIMAL(5,2) NOT NULL,
+#     q = """
+#         CREATE TABLE items (
+#             item_pk CHAR(36),
+#             item_user_fk CHAR(36),
+#             item_title VARCHAR(50) NOT NULL,
+#             item_price DECIMAL(5,2) NOT NULL,
     
-            item_image_1 VARCHAR(50),
-            item_image_2 VARCHAR(50),
-            item_image_3 VARCHAR(50),
+#             item_image_1 VARCHAR(50),
+#             item_image_2 VARCHAR(50),
+#             item_image_3 VARCHAR(50),
 
-            item_created_at INTEGER UNSIGNED,
-            item_deleted_at INTEGER UNSIGNED,
-            item_blocked_at INTEGER UNSIGNED,
-            item_updated_at INTEGER UNSIGNED,
-            PRIMARY KEY(item_pk)
-        );
-        """        
-    cursor.execute(q)
-    cursor.execute("ALTER TABLE items ADD FOREIGN KEY (item_user_fk) REFERENCES users(user_pk) ON DELETE CASCADE ON UPDATE RESTRICT") 
-
-
-    ##############################
-    cursor.execute("DROP TABLE IF EXISTS roles")
-    q = """
-        CREATE TABLE roles (
-            role_pk CHAR(36),
-            role_name VARCHAR(10) NOT NULL UNIQUE,
-            PRIMARY KEY(role_pk)
-        );
-        """        
-    cursor.execute(q)
+#             item_created_at INTEGER UNSIGNED,
+#             item_deleted_at INTEGER UNSIGNED,
+#             item_blocked_at INTEGER UNSIGNED,
+#             item_updated_at INTEGER UNSIGNED,
+#             PRIMARY KEY(item_pk)
+#         );
+#         """        
+#     cursor.execute(q)
+#     cursor.execute("ALTER TABLE items ADD FOREIGN KEY (item_user_fk) REFERENCES users(user_pk) ON DELETE CASCADE ON UPDATE RESTRICT") 
 
 
-    ##############################    
-    q = """
-        CREATE TABLE users_roles (
-            user_role_user_fk CHAR(36),
-            user_role_role_fk CHAR(36),
-            PRIMARY KEY(user_role_user_fk, user_role_role_fk)
-        );
-        """        
-    cursor.execute(q)
-    cursor.execute("ALTER TABLE users_roles ADD FOREIGN KEY (user_role_user_fk) REFERENCES users(user_pk) ON DELETE CASCADE ON UPDATE RESTRICT") 
-    cursor.execute("ALTER TABLE users_roles ADD FOREIGN KEY (user_role_role_fk) REFERENCES roles(role_pk) ON DELETE CASCADE ON UPDATE RESTRICT") 
+#     ##############################
+#     cursor.execute("DROP TABLE IF EXISTS roles")
+#     q = """
+#         CREATE TABLE roles (
+#             role_pk CHAR(36),
+#             role_name VARCHAR(10) NOT NULL UNIQUE,
+#             PRIMARY KEY(role_pk)
+#         );
+#         """        
+#     cursor.execute(q)
 
 
+#     ##############################    
+#     q = """
+#         CREATE TABLE users_roles (
+#             user_role_user_fk CHAR(36),
+#             user_role_role_fk CHAR(36),
+#             PRIMARY KEY(user_role_user_fk, user_role_role_fk)
+#         );
+#         """        
+#     cursor.execute(q)
+#     cursor.execute("ALTER TABLE users_roles ADD FOREIGN KEY (user_role_user_fk) REFERENCES users(user_pk) ON DELETE CASCADE ON UPDATE RESTRICT") 
+#     cursor.execute("ALTER TABLE users_roles ADD FOREIGN KEY (user_role_role_fk) REFERENCES roles(role_pk) ON DELETE CASCADE ON UPDATE RESTRICT") 
 
 
 
-    ############################## 
-    # Create roles
-    q = f"""
-        INSERT INTO roles (role_pk, role_name)
-        VALUES ("{x.ADMIN_ROLE_PK}", "admin"), ("{x.CUSTOMER_ROLE_PK}", "customer"), 
-        ("{x.PARTNER_ROLE_PK}", "partner"), ("{x.RESTAURANT_ROLE_PK}", "restaurant")
-        """
-    cursor.execute(q)
+
+
+#     ############################## 
+#     # Create roles
+#     q = f"""
+#         INSERT INTO roles (role_pk, role_name)
+#         VALUES ("{x.ADMIN_ROLE_PK}", "admin"), ("{x.CUSTOMER_ROLE_PK}", "customer"), 
+#         ("{x.PARTNER_ROLE_PK}", "partner"), ("{x.RESTAURANT_ROLE_PK}", "restaurant")
+#         """
+#     cursor.execute(q)
 
     ############################## 
     # Create admin user
@@ -134,7 +134,7 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
     }            
     insert_user(user)
     # Assign role to admin user
@@ -160,16 +160,16 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
     }
     insert_user(user)
    
-    # Assign role to customer user
-    q = f"""
-        INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
-        "{x.CUSTOMER_ROLE_PK}")        
-        """    
-    cursor.execute(q)
+#     # Assign role to customer user
+#     q = f"""
+#         INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
+#         "{x.CUSTOMER_ROLE_PK}")        
+#         """    
+#     cursor.execute(q)
 
 
     ############################## 
@@ -188,16 +188,16 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
         
-    }
-    insert_user(user)
-    # Assign role to partner user
-    q = f"""
-        INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
-        "{x.PARTNER_ROLE_PK}")        
-        """    
-    cursor.execute(q)
+#     }
+#     insert_user(user)
+#     # Assign role to partner user
+#     q = f"""
+#         INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
+#         "{x.PARTNER_ROLE_PK}")        
+#         """    
+#     cursor.execute(q)
 
     ############################## 
     # Create restaurant
@@ -215,20 +215,20 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
     }
     insert_user(user)
     
-    # Assign role to restaurant user
-    q = f"""
-        INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
-        "{x.RESTAURANT_ROLE_PK}")        
-        """    
-    cursor.execute(q)
+#     # Assign role to restaurant user
+#     q = f"""
+#         INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
+#         "{x.RESTAURANT_ROLE_PK}")        
+#         """    
+#     cursor.execute(q)
 
 
-    ############################## 
-    # Create 10 customer
+#     ############################## 
+#     # Create 10 customer
 
     domains = ["example.com", "testsite.org", "mydomain.net", "website.co", "fakemail.io", "gmail.com", "hotmail.com"]
     user_password = hashed_password = generate_password_hash("password")
@@ -249,18 +249,18 @@ try:
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
             "user_verification_key" : str(uuid.uuid4()),
-            "restet_password_key" : 0
+            "user_reset_password_key" : 0
         }
 
-        insert_user(user)
-        cursor.execute("""INSERT INTO users_roles (
-            user_role_user_fk,
-            user_role_role_fk)
-            VALUES (%s, %s)""", (user_pk, x.CUSTOMER_ROLE_PK))
+#         insert_user(user)
+#         cursor.execute("""INSERT INTO users_roles (
+#             user_role_user_fk,
+#             user_role_role_fk)
+#             VALUES (%s, %s)""", (user_pk, x.CUSTOMER_ROLE_PK))
 
 
-    ############################## 
-    # Create 10 partners
+#     ############################## 
+#     # Create 10 partners
 
     user_password = hashed_password = generate_password_hash("password")
     for _ in range(10):
@@ -279,38 +279,38 @@ try:
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
             "user_verification_key" : str(uuid.uuid4()),
-            "restet_password_key" : 0
+            "user_reset_password_key" : 0
         }
 
-        insert_user(user)
+#         insert_user(user)
 
-        cursor.execute("""
-        INSERT INTO users_roles (
-            user_role_user_fk,
-            user_role_role_fk)
-            VALUES (%s, %s)
-        """, (user_pk, x.PARTNER_ROLE_PK))
+#         cursor.execute("""
+#         INSERT INTO users_roles (
+#             user_role_user_fk,
+#             user_role_role_fk)
+#             VALUES (%s, %s)
+#         """, (user_pk, x.PARTNER_ROLE_PK))
 
-    ############################## 
-    # Create 10 restaurants
-    # Dishes available
-    dishes = ["Spaghetti Carbonara", "Chicken Alfredo", "Beef Wellington", "Sushi", "Pizza Margherita", "Tacos", 
-              "Caesar Salad", "Fish and Chips", "Pad Thai", "Dim Sum", "Croissant", "Ramen", "Lasagna", "Burrito", 
-              "Chicken Parmesan", "Tom Yum Soup", "Shawarma", "Paella", "Hamburger", "Pho", "Chicken Tikka Masala", 
-              "Moussaka", "Goulash", "Bangers and Mash", "Peking Duck", "Falafel", "Ceviche", "Chili Con Carne", 
-              "Ratatouille", "Beef Stroganoff", "Fajitas", "Samosas", "Lobster Roll", "Arancini", "Tiramisu", 
-              "Beef Empanadas", "Poutine", "Biryani", "Hummus", "Schnitzel", "Meatloaf", "Quiche", "Paella Valenciana", 
-              "Clam Chowder", "Sweet and Sour Pork", "Enchiladas", "Crepes", "Masala Dosa", "Gnocchi", "Jambalaya", 
-              "Pork Ribs", "Tandoori Chicken", "Nasi Goreng", "Kimchi", "Roti", "Lamb Tagine", "Risotto", 
-              "Croque Monsieur", "Beef Burritos", "Baked Ziti", "Yakitori", "Fettuccine Alfredo", "Peking Duck Pancakes", 
-              "Empanadas", "Ahi Poke", "Cacciatore", "Pappardelle", "Cannelloni", "Empanadas de Pollo", "Gado-Gado", 
-              "Carne Asada", "Chicken Katsu", "Falafel Wrap", "Maki Rolls", "Stuffed Bell Peppers", "Souvlaki", 
-              "Bibimbap", "Tofu Stir Fry", "Chilaquiles", "Mango Sticky Rice", "Ragu", "Beef Brisket", 
-              "Tortilla Española", "Panzanella", "Chicken Shawarma", "Pesto Pasta", "Bulgogi", "Maki Sushi", 
-              "Cordon Bleu", "Blini with Caviar", "Clafoutis", "Salmon Teriyaki", "Shrimp Scampi", "Frittata", 
-              "Chateaubriand", "Crab Cakes", "Chicken Fried Rice", "Hot Pot", "Mole Poblano", "Tofu Scramble"]
+#     ############################## 
+#     # Create 10 restaurants
+#     # Dishes available
+#     dishes = ["Spaghetti Carbonara", "Chicken Alfredo", "Beef Wellington", "Sushi", "Pizza Margherita", "Tacos", 
+#               "Caesar Salad", "Fish and Chips", "Pad Thai", "Dim Sum", "Croissant", "Ramen", "Lasagna", "Burrito", 
+#               "Chicken Parmesan", "Tom Yum Soup", "Shawarma", "Paella", "Hamburger", "Pho", "Chicken Tikka Masala", 
+#               "Moussaka", "Goulash", "Bangers and Mash", "Peking Duck", "Falafel", "Ceviche", "Chili Con Carne", 
+#               "Ratatouille", "Beef Stroganoff", "Fajitas", "Samosas", "Lobster Roll", "Arancini", "Tiramisu", 
+#               "Beef Empanadas", "Poutine", "Biryani", "Hummus", "Schnitzel", "Meatloaf", "Quiche", "Paella Valenciana", 
+#               "Clam Chowder", "Sweet and Sour Pork", "Enchiladas", "Crepes", "Masala Dosa", "Gnocchi", "Jambalaya", 
+#               "Pork Ribs", "Tandoori Chicken", "Nasi Goreng", "Kimchi", "Roti", "Lamb Tagine", "Risotto", 
+#               "Croque Monsieur", "Beef Burritos", "Baked Ziti", "Yakitori", "Fettuccine Alfredo", "Peking Duck Pancakes", 
+#               "Empanadas", "Ahi Poke", "Cacciatore", "Pappardelle", "Cannelloni", "Empanadas de Pollo", "Gado-Gado", 
+#               "Carne Asada", "Chicken Katsu", "Falafel Wrap", "Maki Rolls", "Stuffed Bell Peppers", "Souvlaki", 
+#               "Bibimbap", "Tofu Stir Fry", "Chilaquiles", "Mango Sticky Rice", "Ragu", "Beef Brisket", 
+#               "Tortilla Española", "Panzanella", "Chicken Shawarma", "Pesto Pasta", "Bulgogi", "Maki Sushi", 
+#               "Cordon Bleu", "Blini with Caviar", "Clafoutis", "Salmon Teriyaki", "Shrimp Scampi", "Frittata", 
+#               "Chateaubriand", "Crab Cakes", "Chicken Fried Rice", "Hot Pot", "Mole Poblano", "Tofu Scramble"]
 
-    user_password = hashed_password = generate_password_hash("password")
+#     user_password = hashed_password = generate_password_hash("password")
 
     for _ in range(10):
         user_pk = str(uuid.uuid4())
@@ -328,45 +328,45 @@ try:
             "user_updated_at": 0,
             "user_verified_at": user_verified_at,
             "user_verification_key": str(uuid.uuid4()),
-            "restet_password_key": 0
+            "user_reset_password_key": 0
         }
         insert_user(user)
 
-        cursor.execute("""
-        INSERT INTO users_roles (
-            user_role_user_fk,
-            user_role_role_fk)
-            VALUES (%s, %s)
-        """, (user_pk, x.RESTAURANT_ROLE_PK))
+#         cursor.execute("""
+#         INSERT INTO users_roles (
+#             user_role_user_fk,
+#             user_role_role_fk)
+#             VALUES (%s, %s)
+#         """, (user_pk, x.RESTAURANT_ROLE_PK))
 
-        # Randomly select 6 unique dishes per restaurant
-        restaurant_dishes = random.sample(dishes, 6)  
-        for dish in restaurant_dishes:
-            dish_id = str(random.randint(1, 100))
-            cursor.execute("""
-            INSERT INTO items (
-                item_pk, item_user_fk, item_title, item_price, item_image_1, item_image_2, item_image_3, item_created_at, item_deleted_at, item_blocked_at, item_updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                str(uuid.uuid4()),
-                user_pk,
-                dish,
-                round(random.uniform(500, 999), 2),
-                f"dish_{dish_id}.jpg",  # item_image_1
-                f"dish_{dish_id}.jpg",  # item_image_2
-                f"dish_{dish_id}.jpg",  # item_image_3
-                int(time.time()),      # item_created_at
-                0,                     # item_deleted_at
-                0,                     # item_blocked_at
-                0                      # item_updated_at
-            ))
+#         # Randomly select 6 unique dishes per restaurant
+#         restaurant_dishes = random.sample(dishes, 6)  
+#         for dish in restaurant_dishes:
+#             dish_id = str(random.randint(1, 100))
+#             cursor.execute("""
+#             INSERT INTO items (
+#                 item_pk, item_user_fk, item_title, item_price, item_image_1, item_image_2, item_image_3, item_created_at, item_deleted_at, item_blocked_at, item_updated_at)
+#                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+#             """, (
+#                 str(uuid.uuid4()),
+#                 user_pk,
+#                 dish,
+#                 round(random.uniform(500, 999), 2),
+#                 f"dish_{dish_id}.jpg",  # item_image_1
+#                 f"dish_{dish_id}.jpg",  # item_image_2
+#                 f"dish_{dish_id}.jpg",  # item_image_3
+#                 int(time.time()),      # item_created_at
+#                 0,                     # item_deleted_at
+#                 0,                     # item_blocked_at
+#                 0                      # item_updated_at
+#             ))
 
-    db.commit()
+#     db.commit()
 
-except Exception as ex:
-    ic(ex)
-    if "db" in locals(): db.rollback()
+# except Exception as ex:
+#     ic(ex)
+#     if "db" in locals(): db.rollback()
 
-finally:
-    if "cursor" in locals(): cursor.close()
-    if "db" in locals(): db.close()
+# finally:
+#     if "cursor" in locals(): cursor.close()
+#     if "db" in locals(): db.close()

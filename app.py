@@ -7,6 +7,7 @@ import uuid
 import time
 import redis
 import os
+import random
 
 from icecream import ic
 ic.configureOutput(prefix=f'***** | ', includeContext=True)
@@ -97,39 +98,84 @@ def view_customer():
     user = session.get("user")
     db, cursor = x.db()
 
-    # i used something called a subquery here, so it is easier to understand for us. otherwise the query is not very easy to read
     cursor.execute("""
-        SELECT * FROM users WHERE user_pk IN (
-        SELECT user_role_user_fk FROM users_roles
+        SELECT 
+            users.*, -- All user columns
+            MIN(items.item_image_1) AS item_image -- Select a single item image (e.g., the smallest lexicographically)
+        FROM users
+        JOIN users_roles ON users.user_pk = users_roles.user_role_user_fk
         JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
-        WHERE roles.role_name = 'restaurant')
-    """)
+        LEFT JOIN items ON users.user_pk = items.item_user_fk
+        WHERE roles.role_name = 'restaurant'
+        GROUP BY users.user_pk -- Group by user to avoid duplicates
+        """)
     restaurants = cursor.fetchall()
+    ic("Restaurant data with items", restaurants)
+
+
+###### Used chatGPT to generate code for the leaflet-map ########
+    # Function to generate random latitude and longitude within Copenhagen's bounds
+    def generate_random_coordinates():
+        # Latitude range for Copenhagen (approx. 55.61 to 55.73)
+        lat = random.uniform(55.61, 55.73)
+        # Longitude range for Copenhagen (approx. 12.48 to 12.65)
+        lon = random.uniform(12.48, 12.65)
+        # Return the generated latitude and longitude as a tuple
+        return lat, lon
+
+    # Iterate through the list of restaurants and generate random coordinates for all
+    for restaurant in restaurants:
+        lat, lon = generate_random_coordinates()  # Generate random coordinates for every restaurant
+        restaurant['latitude'] = lat  # Assign latitude
+        restaurant['longitude'] = lon  # Assign longitude
+        # ic("Restaurant latitude:", lat)  # Debugging output
+        # ic("Restaurant longitude:", lon)  # Debugging output
+####### Code for the leaflet-map END ######
 
     return render_template("view_customer.html", user=user, restaurants=restaurants)
 
 ##############################
-@app.get("/restaurant-items")
-@x.no_cache
-def view_restaurant_items():
+@app.get("/restaurant/<uuid:restaurant_id>")
+def view_restaurant_items(restaurant_id):
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
     db, cursor = x.db()
 
-    # i used something called a subquery here, so it is easier to understand for us. otherwise the query is not very easy to read
+    # Fetch the specific restaurant by its UUID
     cursor.execute("""
-        SELECT * FROM users WHERE user_pk IN (
-        SELECT user_role_user_fk FROM users_roles
-        JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
-        WHERE roles.role_name = 'restaurant')
-    """)
-    restaurants = cursor.fetchall()
+        SELECT * FROM users 
+        WHERE user_pk = %s 
+        AND user_pk IN (
+            SELECT user_role_user_fk 
+            FROM users_roles
+            WHERE user_role_role_fk = (
+                SELECT role_pk FROM roles WHERE role_name = 'restaurant'
+            )
+        )
+    """, (str(restaurant_id),))  # Pass UUID as string in tuple
 
-    cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC")
+    print("Restaurant ID:", str(restaurant_id))
+
+    restaurant = cursor.fetchone()
+
+    # Handle case where restaurant does not exist
+    if not restaurant:
+        return "Restaurant not found", 404
+
+    # Fetch items for this specific restaurant
+    cursor.execute("""
+        SELECT item_title
+        FROM items 
+        WHERE item_user_fk = %s
+    """, (str(restaurant_id),))  # Pass UUID as string in tuple
+
     items = cursor.fetchall()
 
-    return render_template("view_restaurant_items.html", user=user, items=items, restaurants=restaurants)
+    return render_template("view_restaurants_items.html", user=user, restaurant=restaurant, items=items)
+
+
+
 
 
 ##############################
@@ -288,7 +334,7 @@ def signup_customer():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
-        reset_password_key = 0
+        user_reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
@@ -296,7 +342,7 @@ def signup_customer():
             INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -353,15 +399,16 @@ def signup_partner():
         user_updated_at = 0
         user_verified_at = 0
         user_verification_key = str(uuid.uuid4())
-        reset_password_key = 0
+        user_reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
             INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -415,15 +462,15 @@ def signup_restaurant():
         user_verified_at = 0
         user_last_name = ""
         user_verification_key = str(uuid.uuid4())
-        reset_password_key = 0
+        user_reset_password_key = 0
 
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, reset_password_key),
+            (user_pk, user_name, user_email, hashed_password,
+             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -647,53 +694,58 @@ def create_item():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
 ##############################
-@app.post("/reset_password")
-def update_password():
+##############################
+@app.post("/restaurant/<uuid:restaurant_id>/add_to_basket")
+@x.no_cache
+def add_to_basket(restaurant_id):
     try:
-        user_pk = request.form.get("user_pk")
-        new_password = request.form.get("new_password")
-        confirm_password = request.form.get("confirm_password")
+        if "basket" not in session:
+            session["basket"] = []
 
-        if not user_pk or not new_password or not confirm_password:
-            raise x.CustomException("All fields are required", 400)
+        item_title = request.form.get("item_title")
+        if not item_title:
+            raise x.CustomException("Item title is required", 400)
 
-        if new_password != confirm_password:
-            raise x.CustomException("Passwords do not match", 400)
+        session["basket"].append(item_title)
+        session.modified = True
 
-        # Hash the new password
-        hashed_password = generate_password_hash(new_password)
-
-        # Get the current epoch timestamp
-        updated_at = int(time.time())
-
-        # Update the user's password and updated_at in the database
-        db, cursor = x.db()
-        q = """
-            UPDATE users 
-            SET user_password = %s, user_updated_at = %s 
-            WHERE user_pk = %s
-        """
-        cursor.execute(q, (hashed_password, updated_at, user_pk))
-        db.commit()
-
-        print(f"Password updated successfully for user_pk: {user_pk}")  # Debugging
-        return redirect(url_for("view_login", message="Password updated, please login"))
+        updated_basket = render_template("___basket.html", basket=session["basket"])
+        return f"""<template mix-target="#basket" mix-replace>{updated_basket}</template>"""
 
     except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
-        if "db" in locals(): db.rollback()
+        ic(ex)
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
 
 
+##############################
+@app.post("/buy_all")
+@x.no_cache
+def buy_all():
+    try:
+        if "basket" not in session or not session["basket"]:
+            raise x.CustomException("Basket is empty", 400)
 
+        items = session["basket"]
+
+        x.send_order_email(items)
+
+        session["basket"] = []
+        session.modified = True
+        toast = render_template("___toast_ok.html", message="Order placed successfully!")
+        return f"""<template mix-target="#basket" mix-replace><ul id="basket"></ul></template>
+                    <template mix-target="#toast" mix-bottom>{toast}</template>"""
+
+    except Exception as ex:
+        ic(ex)  # Debug log
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
 
 ##############################
 ##############################
@@ -819,57 +871,93 @@ def delete_user():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
         
-
 ##############################
 
-@app.put("/items/<item_pk>")
-def item_update(item_pk):
-    try:
-        item_pk = x.validate_uuid4(item_pk)
-        item_title = x.validate_item_title()
-        item_price = x.validate_item_price()
-
-        item_updated_at = int(time.time())
-
-        # TODO: add validation for the image later
-        # Dynamic query
-        dynamic_images = []
-        dynamic_images_name = []
-        if request.files.get("item_image_1") : 
-            dynamic_images.append("item_image_1 = %s")
-            dynamic_images_name.append("1.png")
-
-        if request.files.get("item_image_2") : 
-            dynamic_images.append("item_image_2 = %s")
-            dynamic_images_name.append("2.png")
+# @app.put("/delete_item")
+# def delete_item():
+#     try:
+#         user_pk = session.get("user", {}).get("user_pk")
+#         if not user_pk:
+#             raise x.CustomException("User not logged in", 403)
         
-        if request.files.get("item_image_3") : 
-            dynamic_images.append("item_image_3 = %s")
-            dynamic_images_name.append("3.png")
+#         item_pk = request.form.get("item_pk", "").strip()
+#         if not item_pk:
+#             raise x.CustomException("Item ID is required", 400)
+#         db, cursor = x.db()
+#         q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s AND item_deleted_at = 0"
+#         cursor.execute(q, (item_pk, user_pk))
+#         item = cursor.fetchone()
+        
+        
+        
+#         return q
+#     except Exception as ex:
+#         pass
+#     finally:
+#         if "cursor" in locals(): cursor.close()
+#         if "db" in locals(): db.close()
+    
+@app.put("/delete_item")
+def delete_item():
+    try:
+        print("Request Method:", request.method)
+        print("Form Data:", request.form)
+        # Get the user session
+        item_user_fk = session.get("user", {}).get("user_pk").strip()
+        print(f"User PK: {item_user_fk}")
+        if not item_user_fk:
+            raise x.CustomException("User not logged in", 403)
 
+        # Get item_pk from the form
+        item_pk = request.form.get("item_pk", "").strip()
+        print(f"Received item_pk: {item_pk}")
+        if not item_pk:
+            raise x.CustomException("Item ID is required", 400)
+
+        # Validate ownership or existence of the item
         db, cursor = x.db()
-        q = f""" UPDATE items SET item_title = %s, item_price = %s, item_updated_at = %s, {', '.join(dynamic_images)}  WHERE item_pk = %s"""
-        ic(q)
-        dynamic_images_name_str = ','.join(dynamic_images_name)
-        cursor.execute(q, (item_title, item_price, item_updated_at, dynamic_images_name_str, item_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot update item", 401)
-        db.commit()
+        print(f"DB: {db}, Cursor: {cursor}")
+        q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s"
+        cursor.execute(q, (item_pk, item_user_fk))
+        item = cursor.fetchone()
+        print(f"Item Found: {item}")
+        if not item:
+            raise x.CustomException("Item not found or unauthorized", 404)
 
-        toast = render_template("___toast_ok.html", message="Item updated")
+        # Soft delete the item
+        item_deleted_at = int(time.time())
+        q = """
+            UPDATE items 
+            SET item_deleted_at = %s 
+            WHERE item_pk = %s AND item_user_fk = %s
+        """
+        cursor.execute(q, (item_deleted_at, item_pk, item_user_fk))
+        db.commit()
+        print("Item successfully soft-deleted.")
+
+        # Return success response
+        toast = render_template("___toast_ok.html", message="Item deleted successfully.")
         return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+
     except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()
+        print(f"Error: {ex}")  # Debugging the exact error
+        if "db" in locals():
+            db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        if isinstance(ex, x.mysql.connector.Error):
-            if "users.user_email" in str(ex): return "<template>email not available</template>", 400
-            return "<template>System upgrating</template>", 500
-        return "<template>System under maintenance</template>", 500
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        return """<template mix-target="#toast">System error occurred.</template>""", 500
+
     finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+            
+
+
+
+
 
 ##############################
 @app.put("/users/block/<user_pk>")
@@ -1226,32 +1314,3 @@ def verify_user(verification_key):
         if "db" in locals(): db.close()
 
 
-##############################
-
-@app.get("/reset_password/<token>")
-def reset_password(token):
-    try:
-        print(f"Token received: {token}")  # Debugging
-        # Verify the reset token
-        db, cursor = x.db()
-        q = "SELECT user_pk FROM users WHERE user_verification_key = %s AND user_deleted_at = 0"
-        cursor.execute(q, (token,))
-        user = cursor.fetchone()
-
-        print(f"User fetched: {user}")  # Debugging
-
-        if not user:
-            raise x.CustomException("Invalid or expired reset link", 400)
-
-        # Render the reset password form
-        return render_template("view_set_new_password.html", user_pk=user["user_pk"])
-
-    except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
-        if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()

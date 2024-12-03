@@ -1,0 +1,32 @@
+<!-- ############### Used chatGPT to generate code for the leaflet-map ################### -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Initialize the map
+    var map = L.map('map').setView([55.6845, 12.564148], 12);
+
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Embed restaurants data from the backend
+    var restaurants = {{ restaurants| tojson }};
+
+    // Function to add markers to the map
+    function addMarkers() {
+        restaurants.forEach(function (restaurant) {
+            var coords = [restaurant.latitude, restaurant.longitude];
+            var marker = L.marker(coords).addTo(map);
+            var popupText = `Restaurant: <strong>${restaurant.user_name}</strong><br>
+                <img src="/static/dishes/${restaurant.item_image}" style="width: 100px; height: 100px;" alt="Dish Image"><br>
+                <a href="/restaurant/${restaurant.user_pk}">See all items here</a>`;
+            marker.bindPopup(popupText);
+        });
+    }
+
+    // Add markers immediately
+    addMarkers();
+</script>
+
+<!-- ####################### Code for the leaflet-map END ########################### -->
