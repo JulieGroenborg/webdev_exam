@@ -13,10 +13,7 @@
                 {{ item['item_title'] }}
                 <form id="frm-add-basket-{{ loop.index }}">
                     <input type="hidden" name="item_title" value="{{ item['item_title'] }}">
-                    <button 
-                        mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" 
-                        mix-data="#frm-add-basket-{{ loop.index }}" 
-                        mix-target="#basket">
+                    <button mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" mix-data="#frm-add-basket-{{ loop.index }}" mix-target="#basket">
                         Put item in basket
                     </button>
                 </form>
@@ -34,10 +31,7 @@
     </ul>
 
     <form id="frm-buy-all">
-        <button 
-            mix-post="{{ url_for('buy_all') }}" 
-            mix-data="#frm-buy-all" 
-            mix-target="#basket">
+        <button mix-post="{{ url_for('buy_all') }}" mix-data="#frm-buy-all" mix-target="#basket">
             Buy All
         </button>
     </form>

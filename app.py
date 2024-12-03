@@ -106,6 +106,7 @@ def view_customer():
     """)
     restaurants = cursor.fetchall()
 
+    # we pass the variable restaurants to the template view_customer so we can loop through it.
     return render_template("view_customer.html", user=user, restaurants=restaurants)
 
 ##############################
@@ -139,7 +140,7 @@ def view_restaurant_items(restaurant_id):
 
     # Fetch items for this specific restaurant
     cursor.execute("""
-        SELECT item_title
+        SELECT item_title, 
         FROM items 
         WHERE item_user_fk = %s
     """, (str(restaurant_id),))  # Pass UUID as string in tuple
