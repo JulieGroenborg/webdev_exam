@@ -177,6 +177,30 @@ try:
         """    
     cursor.execute(q) 
     
+    user_pk = "048d5f1c-a1e7-4dd7-a40a-250ad162489e"
+    user = {
+        "user_pk" : user_pk,
+        "user_name" : "JohnGlemteKoden",
+        "user_last_name" : "Customer",
+        "user_email" : "customer2@fulldemo.com",
+        "user_password" : generate_password_hash("password"),
+        "user_avatar" : "profile_11.jpg",
+        "user_created_at" : int(time.time()),
+        "user_deleted_at" : 0,
+        "user_blocked_at" : 0,
+        "user_updated_at" : 0,
+        "user_verified_at" : int(time.time()),
+        "user_verification_key" : str(uuid.uuid4()),
+        "user_reset_password_key" : "dc2ed7b7-8786-41c2-a3f7-249800add5e8"
+    }
+    insert_user(user)
+    # Assign role to customer user
+    q = f"""
+        INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
+        "{x.CUSTOMER_ROLE_PK}")        
+        """    
+    cursor.execute(q) 
+    
     # Create unverified customer
     user_pk = "1e8047ec-5c9d-4dc0-86d7-2dd8a4fe995d"
     user = {
