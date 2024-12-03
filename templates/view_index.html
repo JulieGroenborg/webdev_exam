@@ -1,13 +1,13 @@
 {% include "_top.html" %}
 
-<main class="ma-7 d-flex">
+<main class="ma-7 d-flex flex-col-reverse j-content-center a-content-center" md="flex-row j-content-start">
     <!-- <img src="{{ url_for('static', filename='dishes/dish_1.jpg') }}" alt=""> -->
-    <img class="w-50%" src="../static/assets/dish_landing.jpg" alt="">
-    <div class="ml-20">
-        <h1 class="text-(3rem)">Hi!</h1>
-        <h2 class="text-(2rem)">Welcome to Wolt</h2>
+    <img class="w-100% px-5 py-8 a-self-center" md="w-50%" lg="w-40%" src="../static/assets/dish_landing.jpg" alt="">
+    <div md="ml-20 a-self-center">
+        <h1 class="text-(3rem) text-a-center" md="text-a-left">Hi!</h1>
+        <h2 class="text-(2rem) text-a-center" md="text-a-left">Welcome to Viento</h2>
 
-        <legend class="a-self-center text-(1.2rem) pb-6">Choose what role you want to sign up as here!</legend>
+        <legend class="text-a-center text-(1.2rem) pb-10" md="text-a-left">Choose what role you want to sign up as here!</legend>
         <div id="chooseRole" class="d-flex j-content-center gap-9">
             <div class="gap-2 d-flex flex-col j-self-center">
                 <a id="customer" href="/customer-signup"

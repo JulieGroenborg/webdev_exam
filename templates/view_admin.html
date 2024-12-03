@@ -1,58 +1,49 @@
 {% include "_top_logged.html" %}
 
-Admin
+    <section class="grid cols-1 ma-10" md="cols-2 mx-40 my-20">
+        <section class="pb-20 " md="border-c-(#E4E4E4) border-r-2 pr-8">
+            <h2 class="text-a-center text-c-(#00C2E8)">All users</h2>
+            {% for user in users %}
+            <div class="pb-2 pt-2 border-c-(#E4E4E4) border-b-2">
+                <form id="frm_user_xblock-{{user['user_pk']}}" class="d-flex j-content-between">
+                    <div class="d-flex a-items-center gap-5">
+                        <p class="border-c-(#E4E4E4) border-r-2 pr-5">{{ user['user_email'] }}</p>
+                        <!--name skal udskiftes med roles!!!!!! -->
+                        <p>{{ user['user_name'] }}</p>
+                        <!-- <p>{{ user['user_roles'] }}</p> -->
+                    </div>
 
+                    {% if user['user_verified_at'] != 0 %}
+                        {% if user['user_blocked_at'] == 0 %}
+                            {% include '___btn_block_user.html' %}
+                        {% else %}
+                            {% include '___btn_unblock_user.html' %}
+                        {% endif %}
+                    {% endif %}
 
-<!-- <form id="frm_user_update">
-    <input type="text" name="user_name" mix-check="{{ x.USER_NAME_REGEX }}" value="{{user['user_name']}}">
-    <input type="text" name="user_last_name" value="{{user['user_last_name']}}"
-        mix-check="{{ x.USER_LAST_NAME_REGEX }}">
-    <input type="text" name="user_email" value="{{user['user_email']}}" mix-check="{{ x.REGEX_EMAIL }}">
-    <button mix-put="/users" mix-data="#frm_user_update">
-        Update user
-    </button>
-</form> -->
+                </form>
+            </div>
+            {% endfor %}
+        </section>
 
-<div class="d-flex">
-    <section class="w-40%">
-        <h2>All users</h2>
-        {% for user in users %}
-        <div class="d-flex j-content-between mb-5 mt-5">
-            <form id="frm_user_xblock-{{user['user_pk']}}" class="d-flex w-60% j-content-between">
-                <p>{{user['user_email']}}</p>
+        <section md="pl-4">
+            <h2 class="text-a-center text-c-(#00C2E8)">All items</h2>
+            {% for item in items %}
+            <div class="pb-2 pt-2 border-c-(#E4E4E4) border-b-2">
+                <form id="frm_item_xblock-{{item['item_pk']}}" class="d-flex j-content-between">
+                    <p>{{item['item_title']}}</p>
 
-                {% if user['user_verified_at'] != 0 %}
-                {% if user['user_blocked_at'] == 0 %}
-                {% include '___btn_block_user.html' %}
-                {% else %}
-                {% include '___btn_unblock_user.html' %}
-                {% endif %}
-                {% endif %}
+                    {% if item['item_blocked_at'] == 0 %}
+                        {% include '___btn_block_item.html' %}
+                    {% else %}
+                        {% include '___btn_unblock_item.html' %}
+                    {% endif %}
+                </form>
+            </div>
+            {% endfor %}
+        </section>
 
-            </form>
-        </div>
-        {% endfor %}
     </section>
-
-    <section class="w-40%">
-        <h2>All items</h2>
-        {% for item in items %}
-        <div class="d-flex w-50% j-content-between mb-5 mt-5">
-            <form id="frm_item_xblock-{{item['item_pk']}}" class="d-flex w-60% j-content-between">
-                <p>{{item['item_title']}}</p>
-
-                {% if item['item_blocked_at'] == 0 %}
-                {% include '___btn_block_item.html' %}
-                {% else %}
-                {% include '___btn_unblock_item.html' %}
-                {% endif %}
-
-            </form>
-        </div>
-        {% endfor %}
-    </section>
-
-</div>
 
 
 

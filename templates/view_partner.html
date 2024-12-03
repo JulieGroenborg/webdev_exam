@@ -1,6 +1,10 @@
 {% include "_top_logged.html" %}
+    <main class="ma-7 d-flex flex-col-reverse j-content-center a-content-center" md="flex-row j-content-start mx-40">
+        <img class="w-100% px-5 py-8 a-self-center" md="w-50%" lg="w-40%" src="../static/assets/dish_partner.jpg" alt="">
+        <section md="ml-20 a-self-center">
+            <h1 class="text-(3rem) text-a-center" md="text-a-left">Hi {{ user['user_name'] }}</h1>
+            <h2 class="text-(2rem) text-a-center" md="text-a-left">Welcome to Viento as a partner</h2>
+        </section>
+    </main>
 
-
-    {{ user }}
-</body>
-</html>
+{% include "_bottom.html" %}
