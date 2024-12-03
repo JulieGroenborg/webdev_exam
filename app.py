@@ -165,8 +165,8 @@ def view_restaurant_items(restaurant_id):
 
     # Fetch items for this specific restaurant
     cursor.execute("""
-        SELECT item_title
-        FROM items 
+        SELECT *
+        FROM items
         WHERE item_user_fk = %s
     """, (str(restaurant_id),))  # Pass UUID as string in tuple
 
@@ -749,7 +749,7 @@ def buy_all():
         session["basket"] = []
         session.modified = True
         toast = render_template("___toast_ok.html", message="Order placed successfully!")
-        return f"""<template mix-target="#basket" mix-replace><ul id="basket"></ul></template>
+        return f"""<template mix-target="#basket" mix-replace><div id="basket"></div></template>
                     <template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:

@@ -6,40 +6,56 @@
     <title>Restaurant Items</title>
 </head>
 <body>
-    <h1>{{ restaurant['user_name'] }}</h1>
-    <ul>
-        {% for item in items %}
-            <li>
-                {{ item['item_title'] }}
-                <form id="frm-add-basket-{{ loop.index }}">
-                    <input type="hidden" name="item_title" value="{{ item['item_title'] }}">
-                    <button 
-                        mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" 
-                        mix-data="#frm-add-basket-{{ loop.index }}" 
-                        mix-target="#basket">
-                        Put item in basket
-                    </button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
-    
-    
-
-    <h2>Your Basket</h2>
-    <ul id="basket">
-        {% for item in session.get('basket', []) %}
-            <li>{{ item }}</li>
-        {% endfor %}
-    </ul>
-
-    <form id="frm-buy-all">
-        <button 
-            mix-post="{{ url_for('buy_all') }}" 
-            mix-data="#frm-buy-all" 
-            mix-target="#basket">
-            Buy All
-        </button>
-    </form>
+    <a href="{{url_for('view_customer')}}" class="cursor-pointer ml-10 d-flex a-items-center gap-2 text-c-(#00C2E8)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        Back
+    </a>
+    <h1 class="text-(3rem) text-a-center">{{ restaurant['user_name'] }}</h1>
+    <div class="d-grid cols-1 mx-5" md="cols-3 mx-10">
+        <section class="d-grid cols-1" md="col-2 cols-2" xl="cols-3">
+            {% for item in items %}
+                <article class="d-block border-1 border-c-(#E4E4E4) rounded-md pa-4 ma-2">
+                    <img class="w-full h-150px obj-f-cover" src="/static/dishes/{{item['item_image_1']}}" alt="">
+                    <p class="text-w-bold text-(1.2rem)">{{ item['item_title'] }}</p>
+                    <p>{{ item['item_price'] }} kr.</p>
+                    <form id="frm-add-basket-{{ loop.index }}">
+                        <input type="hidden" name="item_title" value="{{ item['item_title'] }}">
+                        <button 
+                            mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" 
+                            mix-data="#frm-add-basket-{{ loop.index }}" 
+                            mix-target="#basket"
+                            class="w-full cursor-pointer bg-c-(#00C2E8) text-c-(#FFFFFF) a-self-end">
+                            <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-basket" viewBox="0 0 16 16">
+                                <path d="M5.757 1.071a.5.5 0 0 1 .172.686L3.383 6h9.234L10.07 1.757a.5.5 0 1 1 .858-.514L13.783 6H15a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1v4.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 13.5V9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1.217L5.07 1.243a.5.5 0 0 1 .686-.172zM2 9v4.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V9H2zM1 7v1h14V7H1zm3 3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 4 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 6 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z"/>
+                            </svg></span>
+                            Put item in basket
+                        </button>
+                    </form>
+                </article>
+            {% endfor %}
+        </section>
+        <section class="border-1 border-c-(#00C2E8) rounded-md pa-4 ma-2 bg-c-(#EBF7FD)" md="col-1">
+            <section>
+                <h2 class="text-a-center">Your Basket</h2>
+                <div id="basket">
+                    {% for item in session.get('basket', []) %}
+                        <p class="border-b-2 border-c-(#00C2E8) py-2">{{ item }}</p>
+                    {% endfor %}
+                </div>
+            </section>
+        
+            <form id="frm-buy-all">
+                <button 
+                    mix-post="{{ url_for('buy_all') }}" 
+                    mix-data="#frm-buy-all" 
+                    mix-target="#basket"
+                    class="w-full cursor-pointer bg-c-(#202125) text-c-(#FFFFFF) mt-8">
+                    Buy All
+                </button>
+            </form>
+        </section>
+    </div>
 
 {% include "_bottom.html" %}
