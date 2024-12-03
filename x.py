@@ -354,6 +354,46 @@ def send_unblocked_email(user_pk=None, item_pk=None):
     finally:
         pass
 
+##############################
+def send_confirm_delete():
+    try:
+        # Create a gmail fullflaskdemomail
+        # Enable (turn on) 2 step verification/factor in the google account manager
+        # Visit: https://myaccount.google.com/apppasswords
+        # My key/password: atxxbyhicjzrsnhs  
+
+        # Email and password of the sender's Gmail account
+        sender_email = "fullflaskdemoemailexam@gmail.com"
+        password = "atxxbyhicjzrsnhs"  # If 2FA is on, use an App Password instead
+
+        # Receiver email address
+        receiver_email = "fullflaskdemoemailexam@gmail.com"
+        
+        # Create the email message
+        message = MIMEMultipart()
+        message["From"] = "My company name"
+        message["To"] = receiver_email
+        message["Subject"] = "Confirm deletion of account"
+
+        # Body of the email
+        body = f"""Your profile from Viento is now deleted, if you want to create a new profile <a href="http://127.0.0.1">click here</a>"""
+        #body = f"""To confirm your deletion of your account, please <a href="http://127.0.0.1/verify/{user_pk}">click here</a>"""
+        message.attach(MIMEText(body, "html"))
+
+        # Connect to Gmail's SMTP server and send the email
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # Upgrade the connection to secure
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully!")
+
+        return "email sent"
+
+    except Exception as ex:
+        raise_custom_exception("cannot send email", 500)
+    finally:
+        pass
+
 
 ##############################
 def send_order_email(items):

@@ -12,24 +12,43 @@
         <h2>Hi {{ user['user_name'] }}</h2>
         <p>Update/delete your profile here</p>
         <form id="frm_user_update"> 
-            <input type="text" name="user_name" value="{{user['user_name']}}">
+            <input type="text" name="user_name" value="{{user['user_name']}}" mix-check="{{ x.USER_NAME_REGEX }}">
             {% if 'restaurant' not in user['roles'] %}
-            <input type="text" name="user_last_name" value="{{user['user_last_name']}}">
+            <input type="text" name="user_last_name" value="{{user['user_last_name']}}" mix-check="{{ x.USER_LAST_NAME_REGEX }}">
             {% endif %}
-            <input type="text" name="user_email" value="{{user['user_email']}}">
+            <input type="text" name="user_email" value="{{user['user_email']}}" mix-check="{{ x.REGEX_EMAIL }}">
             <button mix-put="/users" mix-data="#frm_user_update" class="cursor-pointer ml-10">
                 Update
             </button>
-            <button mix-put="/users/{{user['user_pk']}}" mix-data="#frm_user_delete" class="cursor-pointer bg-c-(#FE5B52) ml-1">
+        </form>
+        <form id="frm_user_delete">
+            <input type="hidden" name="user_pk" value="{{user['user_pk']}}" id="user_pk">
+            <button type="button" id="openDialog" class="cursor-pointer bg-c-(#FE5B52) ml-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#F6F6F6" class="bi bi-trash" viewBox="0 0 16 16">
-                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
             </button>
-            
+            <div id="overlay"></div>
+            <div id="dialog" class="j-self-center">
+                <a href="{{url_for('view_index')}}" class="cursor-pointer ml-10 d-flex a-items-center gap-2 text-c-(#00C2E8)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                    </svg>
+                    Return to Home
+                </a>
+                <h2 class="text-a-center">Enter password to delete your account</h2>
+                <div class="d-flex flex-col">
+                    <label for="confirm_password" class="d-flex">
+                        <span>Password</span>
+                    </label>
+                    <input name="confirm_password" type="text" mix-check="{{ x.REGEX_USER_PASSWORD }}">
+                </div>
+                <button mix-put="/delete" id="delete" mix-data="#frm_user_delete" class="bg-c-(#00C2E8) text-c-(#EBF7FD) py-5 px-8">Delete account</button>
+                <button id="closeDialog" class="bg-c-(#EBF7FD) text-c-(#00C2E8) py-5 px-8 border-1 border-c-(#00C2E8)">Keep your account</button>
+            </div>
         </form>
     </section>
-
 </main>
-
-
+<link rel="stylesheet" href="{{url_for('static', filename='dialog.css')}}">
+<script src="{{url_for('static', filename='dialog.js')}}"></script>
 {% include "_bottom.html" %}
