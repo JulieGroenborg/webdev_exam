@@ -46,20 +46,10 @@
             <form id="frm_item_update-{{item['item_pk']}}" class="mt-8">
                 <input type="text" name="item_title" value="{{item['item_title']}}" mix-check="{{ x.ITEM_TITLE_REGEX }}">
                 <input type="text" name="item_price" value="{{item['item_price']}}" mix-check="{{ x.PRICE_REGEX }}">
-<<<<<<< HEAD
-                <!-- <input type="text" name="item_image" value="{{item['item_image']}}"> -->
-                <label for="item_image_1">Image 1</label>
-=======
                 <img class="w-20 h-20" src="/images/{{item['item_image_1']}}">
->>>>>>> main
                 <input type="file" name="item_image_1">
-                
-                <label for="item_image_2">image 2</label>
-                <input type="file" name="item_image_2">
-                
-                <label for="item_image_3">image 3</label>
-                <input type="file" name="item_image_3">
-
+                <img class="w-20 h-20" src="/images/{{item['item_image_2']}}">
+                <img class="w-20 h-20" src="/images/{{item['item_image_3']}}">
                 <button mix-put="/items/{{item['item_pk']}}" mix-data="#frm_item_update-{{item['item_pk']}}">
                     Update item
                 </button>
