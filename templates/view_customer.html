@@ -1,26 +1,26 @@
 {% include "_top_logged.html" %}
 
-<main class="w-full d-flex">
-    <div id="map" class="w-50% h-100vh"></div>
-    <section>
-        Du er logget ind som customer
-        <h2>Restaurants</h2>
-        <!-- The variable is passed from the app.py as "restaurants" and therefore we can loop trough it -->
-
-        {% for restaurant in restaurants %}
-        <a href="{{ url_for('view_restaurant_items', restaurant_id=restaurant['user_pk']) }}" class="d-block">
-            <div>
-                <img class="w-190px h-190px obj-f-cover" src="/static/dishes/{{restaurant['item_image']}}" alt="">
-                <p class="mt-0 text-(1rem)">
-                    {{
-                    restaurant['user_name']
-                    }} ({{ restaurant['user_email'] }})
-                </p>
-
+<main class="w-full">
+    <h2 class="text-(2rem) text-a-center pb-5" md="text-(3rem) pb-10">Browse through all restaurants</h2>
+    <section class="d-flex flex-col a-items-center" sm="flex-row a-items-start">
+        <div id="map" class="w-90% h-100vh" sm="70%" md="w-50%"></div>
+        <section class="d-grid cols-2" sm="cols-2 mx-10" md="cols-3 mx-20">
+            <!-- The variable is passed from the app.py as "restaurants" and therefore we can loop trough it -->
+    
+            {% for restaurant in restaurants %}
+            <div class="ma-2">
+                <a href="{{ url_for('view_restaurant_items', restaurant_id=restaurant['user_pk']) }}" class="d-block border-1 border-c-(#E4E4E4) rounded-md pa-2">
+                    <div>
+                        <img class="w-full h-150px obj-f-cover" src="/static/dishes/{{restaurant['item_image']}}" alt="">
+                        <p class="mt-0 text-(1rem) text-c-(#202125)">
+                            {{ restaurant['user_name'] }}
+                        </p>
+        
+                    </div>
+                </a>
             </div>
-        </a>
-        {% endfor %}
-
+            {% endfor %}
+        </section>
     </section>
 </main>
 
