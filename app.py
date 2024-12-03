@@ -842,8 +842,9 @@ def item_update(item_pk):
         db.commit()
 
         # Return success response
-        toast = render_template("___toast_ok.html", message="Item updated")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        return f"""<template mix-redirect="/restaurant"></template>"""
+        # toast = render_template("___toast_ok.html", message="Item updated")
+        # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
         ic("Error during item update:")
