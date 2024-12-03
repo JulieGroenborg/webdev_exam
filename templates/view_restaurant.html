@@ -43,13 +43,40 @@
         <div id="items">
             {% for item in items %}
     
-            <form id="frm_item_update-{{item['item_pk']}}" class="mt-8">
+            <form id="frm_item_update-{{item['item_pk']}}" class="mt-8" enctype="multipart/form-data">
                 <input type="text" name="item_title" value="{{item['item_title']}}" mix-check="{{ x.ITEM_TITLE_REGEX }}">
                 <input type="text" name="item_price" value="{{item['item_price']}}" mix-check="{{ x.PRICE_REGEX }}">
-                <img class="w-20 h-20" src="/images/{{item['item_image_1']}}">
-                <input type="file" name="item_image_1">
-                <img class="w-20 h-20" src="/images/{{item['item_image_2']}}">
-                <img class="w-20 h-20" src="/images/{{item['item_image_3']}}">
+                <div>
+                    {% if item['item_image_1_url'] %}
+                    <img src="{{ item['item_image_1_url'] }}" alt="Current Image 1" width="100">
+                    {% else %}
+                    <span>No image available</span>
+                    {% endif %}
+                    <label for="item_image_1">Replace Image 1</label>
+                    <input type="file" name="item_image_1">
+                </div>
+        
+                <!-- Current Image 2 -->
+                <div>
+                    {% if item['item_image_2_url'] %}
+                    <img src="{{ item['item_image_2_url'] }}" alt="Current Image 2" width="100">
+                    {% else %}
+                    <span>No image available</span>
+                    {% endif %}
+                    <label for="item_image_2">Replace Image 2</label>
+                    <input type="file" name="item_image_2">
+                </div>
+        
+                <!-- Current Image 3 -->
+                <div>
+                    {% if item['item_image_3_url'] %}
+                    <img src="{{ item['item_image_3_url'] }}" alt="Current Image 3" width="100">
+                    {% else %}
+                    <span>No image available</span>
+                    {% endif %}
+                    <label for="item_image_3">Replace Image 3</label>
+                    <input type="file" name="item_image_3">
+                </div>
                 <button mix-put="/items/{{item['item_pk']}}" mix-data="#frm_item_update-{{item['item_pk']}}">
                     Update item
                 </button>
