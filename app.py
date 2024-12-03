@@ -670,43 +670,6 @@ def create_item():
 
 
 ##############################
-@app.post("/delete-user")
-def delete_user():
-    try:
-        user_pk = session.get("user", {}).get("user_pk")
-        if not user_pk:
-            raise x.CustomException("User not logged in", 403)
-
-        deleted_at = int(time.time())
-
-        db, cursor = x.db()
-        q = """
-            UPDATE users 
-            SET user_deleted_at = %s 
-            WHERE user_pk = %s
-        """
-        cursor.execute(q, (deleted_at, user_pk))
-        db.commit()
-
-        print(f"User soft-deleted successfully for user_pk: {user_pk}") 
-
-        session.clear()
-
-        print(f"User succesfully deleted for user_pk: {user_pk}") 
-        return redirect(url_for("view_login", message="User succesfully deleted"))
-
-    except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
-        if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException):
-            toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
-        return """<template mix-target="#toast">System error occurred.</template>""", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
 ##############################
 @app.post("/restaurant/<uuid:restaurant_id>/add_to_basket")
 @x.no_cache
