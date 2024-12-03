@@ -217,14 +217,14 @@ def validate_item_price():
     return float(price)  # Return the price as a float for further processing
 
 ##############################
-def send_reset_email(user_email, reset_token):
+def send_reset_email(user_email, user_reset_password_key):
     try:
         # Sender email and app password
         sender_email = "fullflaskdemoemailexam@gmail.com"
         password = "atxxbyhicjzrsnhs"  # App Password for Gmail (with 2FA enabled)
 
         # Construct the reset URL
-        reset_url = f"http://127.0.0.1/reset_password/{reset_token}"
+        reset_url = f"http://127.0.0.1/reset-password/{user_reset_password_key}"
 
         # Create the email message
         message = MIMEMultipart()
@@ -276,10 +276,12 @@ def send_blocked_email(user_pk=None, item_pk=None):
 
         if user_pk:
             message["Subject"] = "User blocked from Viento"
-            body = f"User with ID {user_pk} has been blocked from Viento."
+            body = f"""<p> User with ID {user_pk} has been blocked from Viento.</p>  
+                       <p> Please contact an admin if you think this is a mistake or you require further information. </p>"""
         elif item_pk:
             message["Subject"] = "Item blocked from Viento"
-            body = f"Item with ID {item_pk} has been blocked from Viento."
+            body = f"""<p> User with ID {item_pk} has been blocked from Viento.</p>  
+                       <p> Please contact an admin if you think this is a mistake or you require further information. </p>"""
         else:
             raise ValueError("Either user_pk or item_pk must be provided.")
 
@@ -328,10 +330,10 @@ def send_unblocked_email(user_pk=None, item_pk=None):
         # if the route sends a user_pk it will send the user body, and the same for item_pk if it's sent.
         if user_pk:
             message["Subject"] = "User unblocked from Viento"
-            body = f"User with ID {user_pk} has been unblocked from Viento."
+            body = f"""<p> User with ID {user_pk} has been unblocked from Viento.  </p> """
         elif item_pk:
             message["Subject"] = "Item unblocked from Viento"
-            body = f"Item with ID {item_pk} has been unblocked from Viento."
+            body = f"""<p> Item with ID {item_pk} has been unblocked from Viento.  </p> """
         else:
             raise ValueError("Either user_pk or item_pk must be provided.")
 
@@ -347,6 +349,89 @@ def send_unblocked_email(user_pk=None, item_pk=None):
 
         return "email sent"
        
+    except Exception as ex:
+        raise_custom_exception("cannot send email", 500)
+    finally:
+        pass
+
+##############################
+def send_confirm_delete():
+    try:
+        # Create a gmail fullflaskdemomail
+        # Enable (turn on) 2 step verification/factor in the google account manager
+        # Visit: https://myaccount.google.com/apppasswords
+        # My key/password: atxxbyhicjzrsnhs  
+
+        # Email and password of the sender's Gmail account
+        sender_email = "fullflaskdemoemailexam@gmail.com"
+        password = "atxxbyhicjzrsnhs"  # If 2FA is on, use an App Password instead
+
+        # Receiver email address
+        receiver_email = "fullflaskdemoemailexam@gmail.com"
+        
+        # Create the email message
+        message = MIMEMultipart()
+        message["From"] = "My company name"
+        message["To"] = receiver_email
+        message["Subject"] = "Confirm deletion of account"
+
+        # Body of the email
+        body = f"""Your profile from Viento is now deleted, if you want to create a new profile <a href="http://127.0.0.1">click here</a>"""
+        #body = f"""To confirm your deletion of your account, please <a href="http://127.0.0.1/verify/{user_pk}">click here</a>"""
+        message.attach(MIMEText(body, "html"))
+
+        # Connect to Gmail's SMTP server and send the email
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # Upgrade the connection to secure
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully!")
+
+        return "email sent"
+
+    except Exception as ex:
+        raise_custom_exception("cannot send email", 500)
+    finally:
+        pass
+
+
+##############################
+def send_order_email(items):
+    try:
+        # Email and password of the sender's Gmail account
+        sender_email = "fullflaskdemoemailexam@gmail.com"
+        password = "atxxbyhicjzrsnhs"  # If 2FA is on, use an App Password instead
+
+        # Receiver email address
+        receiver_email = "fullflaskdemoemailexam@gmail.com"
+
+        # Create the email message
+        message = MIMEMultipart()
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        message["Subject"] = "Order Confirmation - Viento"
+
+        # Create the email body with the order details
+        body = f"""
+        <p>Your order has been recieved and your food is on the way!</p>
+        <ul>
+        """
+        for item in items:
+            body += f"<li>{item}</li>"
+        body += "</ul>"
+
+        # Attach the body to the email
+        message.attach(MIMEText(body, "html"))
+
+        # Connect to Gmail's SMTP server and send the email
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # Upgrade the connection to secure
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Order email sent successfully!")
+
+        return "Email sent successfully!"
+
     except Exception as ex:
         raise_custom_exception("cannot send email", 500)
     finally:

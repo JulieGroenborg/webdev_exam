@@ -17,11 +17,18 @@ db, cursor = x.db()
 def insert_user(user):       
     q = f"""
         INSERT INTO users
-        VALUES (%s, %s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s)        
+        VALUES (%s, %s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s, %s)        
         """
     values = tuple(user.values())
     cursor.execute(q, values)
 
+def insert_item(item):       
+    q = f"""
+        INSERT INTO items
+        VALUES (%s, %s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s ,%s)        
+        """
+    values = tuple(item.values())
+    cursor.execute(q, values)
 
 
 
@@ -50,13 +57,14 @@ try:
             user_updated_at INTEGER UNSIGNED,
             user_verified_at INTEGER UNSIGNED,
             user_verification_key CHAR(36),
+            user_reset_password_key CHAR(36),
             PRIMARY KEY(user_pk)
         )
         """        
     cursor.execute(q)
 
 
-    ##############################
+#     ##############################
     
     q = """
         CREATE TABLE items (
@@ -119,7 +127,7 @@ try:
 
     ############################## 
     # Create admin user
-    user_pk = str(uuid.uuid4())
+    user_pk = "3b1f6532-abf1-4d4f-8d02-61f7890ebed9"
     user = {
         "user_pk" : user_pk,
         "user_name" : "Santiago",
@@ -132,7 +140,8 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4()) 
+        "user_verification_key" : str(uuid.uuid4()),
+        "user_reset_password_key" : 0
     }            
     insert_user(user)
     # Assign role to admin user
@@ -157,11 +166,36 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4())
+        "user_verification_key" : str(uuid.uuid4()),
+        "user_reset_password_key" : 0
     }
     insert_user(user)
-   
     # Assign role to customer user
+    q = f"""
+        INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
+        "{x.CUSTOMER_ROLE_PK}")        
+        """    
+    cursor.execute(q) 
+    
+    # Create unverified customer
+    user_pk = "1e8047ec-5c9d-4dc0-86d7-2dd8a4fe995d"
+    user = {
+        "user_pk" : user_pk,
+        "user_name" : "UnverifiedJohn",
+        "user_last_name" : "Customer",
+        "user_email" : "Unverifiedcustomer@fulldemo.com",
+        "user_password" : generate_password_hash("password"),
+        "user_avatar" : "profile_11.jpg",
+        "user_created_at" : int(time.time()),
+        "user_deleted_at" : 0,
+        "user_blocked_at" : 0,
+        "user_updated_at" : 0,
+        "user_verified_at" : 0,
+        "user_verification_key" : "2722bdea-432b-4f0b-b441-2a5e1dc27e66",
+        "user_reset_password_key" : 0
+    }
+    insert_user(user)
+#     # Assign role to customer user
     q = f"""
         INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
         "{x.CUSTOMER_ROLE_PK}")        
@@ -171,7 +205,7 @@ try:
 
     ############################## 
     # Create partner
-    user_pk = str(uuid.uuid4())
+    user_pk = "b38fa0dd-16c2-4fbf-a7c9-8e5956578064"
     user = {
         "user_pk" : user_pk,
         "user_name" : "John",
@@ -184,7 +218,9 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4())
+        "user_verification_key" : str(uuid.uuid4()),
+        "user_reset_password_key" : 0
+        
     }
     insert_user(user)
     # Assign role to partner user
@@ -196,7 +232,7 @@ try:
 
     ############################## 
     # Create restaurant
-    user_pk = str(uuid.uuid4())
+    user_pk = "27763272-712a-4d0a-b574-cad7318106a0"
     user = {
         "user_pk" : user_pk,
         "user_name" : "John",
@@ -209,11 +245,29 @@ try:
         "user_blocked_at" : 0,
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
-        "user_verification_key" : str(uuid.uuid4())
+        "user_verification_key" : str(uuid.uuid4()),
+        "user_reset_password_key" : 0
     }
     insert_user(user)
     
-    # Assign role to restaurant user
+    # Create item for restaurant 27763272-712a-4d0a-b574-cad7318106a0
+    item_fk = "f27507c0-241e-45f8-aa07-0d47b496b037"
+    item = {
+        "item_pk"         : item_fk,
+        "item_user_fk"    : user_pk,
+        "item_title"      : "Spaghetti Carbonara",
+        "item_price"      : 15.99,
+        "item_image_1"    : "dish_1.jpg",
+        "item_image_2"    : "dish_2.jpg",
+        "item_image_3"    : "dish_3.jpg",
+        "item_created_at" : int(time.time()),
+        "item_deleted_at" : 0,
+        "item_blocked_at" : 0,
+        "item_updated_at" : 0
+    }
+    insert_item(item)
+    
+#     # Assign role to restaurant user
     q = f"""
         INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
         "{x.RESTAURANT_ROLE_PK}")        
@@ -221,8 +275,8 @@ try:
     cursor.execute(q)
 
 
-    ############################## 
-    # Create 10 customer
+#     ############################## 
+#     # Create 10 customer
 
     domains = ["example.com", "testsite.org", "mydomain.net", "website.co", "fakemail.io", "gmail.com", "hotmail.com"]
     user_password = hashed_password = generate_password_hash("password")
@@ -242,7 +296,8 @@ try:
             "user_blocked_at" : 0,
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
-            "user_verification_key" : str(uuid.uuid4())
+            "user_verification_key" : str(uuid.uuid4()),
+            "user_reset_password_key" : 0
         }
 
         insert_user(user)
@@ -252,8 +307,8 @@ try:
             VALUES (%s, %s)""", (user_pk, x.CUSTOMER_ROLE_PK))
 
 
-    ############################## 
-    # Create 10 partners
+#     ############################## 
+#     # Create 10 partners
 
     user_password = hashed_password = generate_password_hash("password")
     for _ in range(10):
@@ -271,7 +326,8 @@ try:
             "user_blocked_at" : 0,
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
-            "user_verification_key" : str(uuid.uuid4())
+            "user_verification_key" : str(uuid.uuid4()),
+            "user_reset_password_key" : 0
         }
 
         insert_user(user)
@@ -319,7 +375,8 @@ try:
             "user_blocked_at": 0,
             "user_updated_at": 0,
             "user_verified_at": user_verified_at,
-            "user_verification_key": str(uuid.uuid4())
+            "user_verification_key": str(uuid.uuid4()),
+            "user_reset_password_key": 0
         }
         insert_user(user)
 
