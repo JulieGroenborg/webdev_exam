@@ -1,16 +1,14 @@
 {% include "_top_logged.html" %}
 
-    <section class="grid cols-1 ma-10" md="cols-2 mx-40 my-20">
-        <section class="pb-20 " md="border-c-(#E4E4E4) border-r-2 pr-8">
+    <section class="grid cols-1 ma-10" md="cols-2 mx-20" lg="cols-2 mx-40 my-20">
+        <section class="pb-20" md="border-c-(#E4E4E4) border-r-2 pr-8">
             <h2 class="text-a-center text-c-(#00C2E8)">All users</h2>
             {% for user in users %}
             <div class="pb-2 pt-2 border-c-(#E4E4E4) border-b-2">
                 <form id="frm_user_xblock-{{user['user_pk']}}" class="d-flex j-content-between">
                     <div class="d-flex a-items-center gap-5">
                         <p class="border-c-(#E4E4E4) border-r-2 pr-5">{{ user['user_email'] }}</p>
-                        <!--name skal udskiftes med roles!!!!!! -->
-                        <p>{{ user['user_name'] }}</p>
-                        <!-- <p>{{ user['user_roles'] }}</p> -->
+                        <p>{{ user['role_name'] }}</p>
                     </div>
 
                     {% if user['user_verified_at'] != 0 %}
@@ -31,7 +29,10 @@
             {% for item in items %}
             <div class="pb-2 pt-2 border-c-(#E4E4E4) border-b-2">
                 <form id="frm_item_xblock-{{item['item_pk']}}" class="d-flex j-content-between">
-                    <p>{{item['item_title']}}</p>
+                    <div class="d-flex a-items-center gap-5">
+                        <p class="border-c-(#E4E4E4) border-r-2 pr-5">{{item['item_title']}}</p>
+                        <p>{{ item['item_price'] }} kr.</p>
+                    </div>
 
                     {% if item['item_blocked_at'] == 0 %}
                         {% include '___btn_block_item.html' %}

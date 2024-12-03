@@ -434,7 +434,9 @@ def signup_partner():
         x.send_verify_email(user_email, user_verification_key)
         db.commit()
 
-        return """<template mix-redirect="/login"></template>""", 201
+        # Redirect to login with a message
+        message = "Account created, please verify your account."
+        return f""""<template mix-redirect="/login?message={message}"></template>"""
 
     except Exception as ex:
         ic(ex)
@@ -496,7 +498,9 @@ def signup_restaurant():
         x.send_verify_email(user_email, user_verification_key)
         db.commit()
 
-        return """<template mix-redirect="/login"></template>""", 201
+        # Redirect to login with a message
+        message = "Account created, please verify your account."
+        return f""""<template mix-redirect="/login?message={message}"></template>"""
 
     except Exception as ex:
         ic(ex)
