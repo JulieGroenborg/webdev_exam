@@ -50,7 +50,7 @@ try:
             user_updated_at INTEGER UNSIGNED,
             user_verified_at INTEGER UNSIGNED,
             user_verification_key CHAR(36),
-            restet_password_key CHAR(36),
+            user_reset_password_key CHAR(36),
             PRIMARY KEY(user_pk)
         )
         """        
@@ -134,7 +134,7 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
     }            
     insert_user(user)
     # Assign role to admin user
@@ -160,7 +160,7 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
     }
     insert_user(user)
    
@@ -188,7 +188,7 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
         
     }
     insert_user(user)
@@ -215,7 +215,7 @@ try:
         "user_updated_at" : 0,
         "user_verified_at" : int(time.time()),
         "user_verification_key" : str(uuid.uuid4()),
-        "restet_password_key" : 0
+        "user_reset_password_key" : 0
     }
     insert_user(user)
     
@@ -249,7 +249,7 @@ try:
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
             "user_verification_key" : str(uuid.uuid4()),
-            "restet_password_key" : 0
+            "user_reset_password_key" : 0
         }
 
         insert_user(user)
@@ -279,7 +279,7 @@ try:
             "user_updated_at" : 0,
             "user_verified_at" : user_verified_at,
             "user_verification_key" : str(uuid.uuid4()),
-            "restet_password_key" : 0
+            "user_reset_password_key" : 0
         }
 
         insert_user(user)
@@ -328,7 +328,7 @@ try:
             "user_updated_at": 0,
             "user_verified_at": user_verified_at,
             "user_verification_key": str(uuid.uuid4()),
-            "restet_password_key": 0
+            "user_reset_password_key": 0
         }
         insert_user(user)
 

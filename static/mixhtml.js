@@ -119,6 +119,7 @@ async function mix_fetch_data(el) {
   }
   let conn = null;
   if (["post", "put", "patch"].includes(method)) {
+    
     conn = await fetch(url, {
       method: method,
       body: new FormData(document.querySelector(el.getAttribute("mix-data"))),

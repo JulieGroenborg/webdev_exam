@@ -797,57 +797,93 @@ def delete_user():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
         
-
 ##############################
 
-@app.put("/items/<item_pk>")
-def item_update(item_pk):
-    try:
-        item_pk = x.validate_uuid4(item_pk)
-        item_title = x.validate_item_title()
-        item_price = x.validate_item_price()
-
-        item_updated_at = int(time.time())
-
-        # TODO: add validation for the image later
-        # Dynamic query
-        dynamic_images = []
-        dynamic_images_name = []
-        if request.files.get("item_image_1") : 
-            dynamic_images.append("item_image_1 = %s")
-            dynamic_images_name.append("1.png")
-
-        if request.files.get("item_image_2") : 
-            dynamic_images.append("item_image_2 = %s")
-            dynamic_images_name.append("2.png")
+# @app.put("/delete_item")
+# def delete_item():
+#     try:
+#         user_pk = session.get("user", {}).get("user_pk")
+#         if not user_pk:
+#             raise x.CustomException("User not logged in", 403)
         
-        if request.files.get("item_image_3") : 
-            dynamic_images.append("item_image_3 = %s")
-            dynamic_images_name.append("3.png")
+#         item_pk = request.form.get("item_pk", "").strip()
+#         if not item_pk:
+#             raise x.CustomException("Item ID is required", 400)
+#         db, cursor = x.db()
+#         q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s AND item_deleted_at = 0"
+#         cursor.execute(q, (item_pk, user_pk))
+#         item = cursor.fetchone()
+        
+        
+        
+#         return q
+#     except Exception as ex:
+#         pass
+#     finally:
+#         if "cursor" in locals(): cursor.close()
+#         if "db" in locals(): db.close()
+    
+@app.put("/delete_item")
+def delete_item():
+    try:
+        print("Request Method:", request.method)
+        print("Form Data:", request.form)
+        # Get the user session
+        item_user_fk = session.get("user", {}).get("user_pk").strip()
+        print(f"User PK: {item_user_fk}")
+        if not item_user_fk:
+            raise x.CustomException("User not logged in", 403)
 
+        # Get item_pk from the form
+        item_pk = request.form.get("item_pk", "").strip()
+        print(f"Received item_pk: {item_pk}")
+        if not item_pk:
+            raise x.CustomException("Item ID is required", 400)
+
+        # Validate ownership or existence of the item
         db, cursor = x.db()
-        q = f""" UPDATE items SET item_title = %s, item_price = %s, item_updated_at = %s, {', '.join(dynamic_images)}  WHERE item_pk = %s"""
-        ic(q)
-        dynamic_images_name_str = ','.join(dynamic_images_name)
-        cursor.execute(q, (item_title, item_price, item_updated_at, dynamic_images_name_str, item_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot update item", 401)
-        db.commit()
+        print(f"DB: {db}, Cursor: {cursor}")
+        q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s"
+        cursor.execute(q, (item_pk, item_user_fk))
+        item = cursor.fetchone()
+        print(f"Item Found: {item}")
+        if not item:
+            raise x.CustomException("Item not found or unauthorized", 404)
 
-        toast = render_template("___toast_ok.html", message="Item updated")
+        # Soft delete the item
+        item_deleted_at = int(time.time())
+        q = """
+            UPDATE items 
+            SET item_deleted_at = %s 
+            WHERE item_pk = %s AND item_user_fk = %s
+        """
+        cursor.execute(q, (item_deleted_at, item_pk, item_user_fk))
+        db.commit()
+        print("Item successfully soft-deleted.")
+
+        # Return success response
+        toast = render_template("___toast_ok.html", message="Item deleted successfully.")
         return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+
     except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()
+        print(f"Error: {ex}")  # Debugging the exact error
+        if "db" in locals():
+            db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        if isinstance(ex, x.mysql.connector.Error):
-            if "users.user_email" in str(ex): return "<template>email not available</template>", 400
-            return "<template>System upgrating</template>", 500
-        return "<template>System under maintenance</template>", 500
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        return """<template mix-target="#toast">System error occurred.</template>""", 500
+
     finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+            
+
+
+
+
 
 ##############################
 @app.put("/users/block/<user_pk>")
