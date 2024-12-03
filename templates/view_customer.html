@@ -1,6 +1,14 @@
 {% include "_top_logged.html" %}
 
 <main class="w-full d-flex">
+
+    <h1>Search Function</h1>
+    <form action="/search" method="GET">
+        <input type="text" name="query" placeholder="Search..." required>
+        <button type="submit">Search</button>
+    </form>
+
+
     <div id="map" class="w-50% h-100vh"></div>
     <section>
         Du er logget ind som customer
