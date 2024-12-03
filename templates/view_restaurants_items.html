@@ -11,24 +11,35 @@
         {% for item in items %}
             <li>
                 {{ item['item_title'] }}
-                <form id="frm-add-basket">
+                <form id="frm-add-basket-{{ loop.index }}">
                     <input type="hidden" name="item_title" value="{{ item['item_title'] }}">
-                    <button mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" mix-data="#frm-add-basket">Put item in basket</button>
+                    <button 
+                        mix-post="/restaurant/{{restaurant['user_pk']}}/add_to_basket" 
+                        mix-data="#frm-add-basket-{{ loop.index }}" 
+                        mix-target="#basket">
+                        Put item in basket
+                    </button>
                 </form>
             </li>
         {% endfor %}
     </ul>
+    
+    
 
     <h2>Your Basket</h2>
-    <ul>
+    <ul id="basket">
         {% for item in session.get('basket', []) %}
             <li>{{ item }}</li>
         {% endfor %}
     </ul>
-<!--     
-    <form action="{{ url_for('buy_all') }}" method="post">
-        <button type="submit">Buy All</button>
-    </form> -->
-    
+
+    <form id="frm-buy-all">
+        <button 
+            mix-post="{{ url_for('buy_all') }}" 
+            mix-data="#frm-buy-all" 
+            mix-target="#basket">
+            Buy All
+        </button>
+    </form>
 
 {% include "_bottom.html" %}
