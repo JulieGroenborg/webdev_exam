@@ -170,6 +170,12 @@ try:
         "user_reset_password_key" : 0
     }
     insert_user(user)
+    # Assign role to customer user
+    q = f"""
+        INSERT INTO users_roles (user_role_user_fk, user_role_role_fk) VALUES ("{user_pk}", 
+        "{x.CUSTOMER_ROLE_PK}")        
+        """    
+    cursor.execute(q) 
     
     # Create unverified customer
     user_pk = "1e8047ec-5c9d-4dc0-86d7-2dd8a4fe995d"
