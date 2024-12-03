@@ -19,8 +19,8 @@
             var coords = [restaurant.latitude, restaurant.longitude];
             var marker = L.marker(coords).addTo(map);
             var popupText = `Restaurant: <strong>${restaurant.user_name}</strong><br>
-<img src="/static/dishes/${restaurant.item_image}" style="width: 100px; height: 100px;" alt="Dish Image"><br>
-<a href="/restaurant/${restaurant.user_pk}">See all items here</a>`;
+                <img src="/static/dishes/${restaurant.item_image}" style="width: 100px; height: 100px;" alt="Dish Image"><br>
+                <a href="/restaurant/${restaurant.user_pk}">See all items here</a>`;
             marker.bindPopup(popupText);
         });
     }

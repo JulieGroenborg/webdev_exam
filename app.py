@@ -98,22 +98,6 @@ def view_customer():
     user = session.get("user")
     db, cursor = x.db()
 
-    # i used something called a subquery here, so it is easier to understand for us. otherwise the query is not very easy to read
-    # cursor.execute("""
-    #     SELECT * FROM users WHERE user_pk IN (
-    #     SELECT user_role_user_fk FROM users_roles
-    #     JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
-    #     WHERE roles.role_name = 'restaurant')
-    # """)
-    # restaurants = cursor.fetchall()
-
-    # cursor.execute("""
-    #     SELECT item_image_1
-    #     FROM items
-    #     JOIN users ON item_user_fk = user_pk
-    #     """)
-    # items = cursor.fetchall() 
-    # ic("dette er items", items)
     cursor.execute("""
         SELECT 
             users.*, -- All user columns
@@ -129,7 +113,7 @@ def view_customer():
     ic("Restaurant data with items", restaurants)
 
 
-############### Used chatGPT to generate code for the leaflet-map ###################
+###### Used chatGPT to generate code for the leaflet-map ########
     # Function to generate random latitude and longitude within Copenhagen's bounds
     def generate_random_coordinates():
         # Latitude range for Copenhagen (approx. 55.61 to 55.73)
@@ -146,7 +130,7 @@ def view_customer():
         restaurant['longitude'] = lon  # Assign longitude
         # ic("Restaurant latitude:", lat)  # Debugging output
         # ic("Restaurant longitude:", lon)  # Debugging output
-####################### Code for the leaflet-map END ###########################
+####### Code for the leaflet-map END ######
 
     return render_template("view_customer.html", user=user, restaurants=restaurants)
 
