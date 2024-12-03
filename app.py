@@ -219,15 +219,27 @@ def view_admin():
 def view_restaurant():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
-    user = session.get("user")
 
-    db, cursor = x.db()
-    cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC")
-    items = cursor.fetchall()
+    user = session.get("user")
+    user_pk = session.get("user", {}).get("user_pk")
+    print("User PK:", user_pk)
+
+    if not user_pk:
+        return redirect(url_for("view_login"))  # Redirect if user_pk is missing
+
+    db, cursor = x.db()  # Assuming this returns a connection and cursor
+    try:
+        cursor.execute("""
+        SELECT * FROM items 
+        WHERE item_user_fk = %s AND item_deleted_at = 0 
+        ORDER BY item_created_at DESC
+        """, (user_pk,))
+        items = cursor.fetchall()
+    finally:
+        db.close()  # Ensure the database connection is closed
 
     return render_template("view_restaurant.html", user=user, x=x, items=items)
 
-     # TODO: husk at close db again.
     
 ##############################
 @app.get("/profile")
@@ -900,27 +912,21 @@ def delete_user():
 @app.put("/delete_item")
 def delete_item():
     try:
-        print("Request Method:", request.method)
-        print("Form Data:", request.form)
         # Get the user session
         item_user_fk = session.get("user", {}).get("user_pk").strip()
-        print(f"User PK: {item_user_fk}")
         if not item_user_fk:
             raise x.CustomException("User not logged in", 403)
 
         # Get item_pk from the form
         item_pk = request.form.get("item_pk", "").strip()
-        print(f"Received item_pk: {item_pk}")
         if not item_pk:
             raise x.CustomException("Item ID is required", 400)
 
         # Validate ownership or existence of the item
         db, cursor = x.db()
-        print(f"DB: {db}, Cursor: {cursor}")
-        q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s"
+        q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s AND item_deleted_at = 0"
         cursor.execute(q, (item_pk, item_user_fk))
         item = cursor.fetchone()
-        print(f"Item Found: {item}")
         if not item:
             raise x.CustomException("Item not found or unauthorized", 404)
 
@@ -933,11 +939,11 @@ def delete_item():
         """
         cursor.execute(q, (item_deleted_at, item_pk, item_user_fk))
         db.commit()
-        print("Item successfully soft-deleted.")
 
         # Return success response
-        toast = render_template("___toast_ok.html", message="Item deleted successfully.")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        return f"""<template mix-redirect="/restaurant"</template>"""
+        # toast = render_template("___toast_ok.html", message="Item deleted successfully.")
+        # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
         print(f"Error: {ex}")  # Debugging the exact error
