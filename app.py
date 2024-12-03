@@ -265,6 +265,69 @@ def view_reset_password(user_reset_password_key):
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+##############################
+@app.get("/search")
+@x.no_cache
+def search():
+    try:
+        ########## Chatyyyyyyy ##########
+        # Get query parameter
+        query = request.args.get('query', '').strip().lower()
+        if not query:
+            raise x.CustomException("Query parameter is required", code=400)
+
+        db, cursor = x.db()
+        # Fetch all restaurants
+        cursor.execute("""
+            SELECT users.user_pk, users.username
+            FROM users
+            INNER JOIN users_roles ON users.user_pk = users_roles.user_role_user_fk
+            INNER JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
+            WHERE roles.role_name = 'restaurant'
+        """)
+        restaurants = cursor.fetchall()
+        ic(restaurants)
+
+        #Fetch all items
+        cursor.execute("""SELECT items.item_pk, items.item_title, items.item_price, items.item_user_fk FROM items""")
+        items = cursor.fetchall()
+        ic(items)
+
+        # Combine and format results for the response
+        results = []
+
+        if restaurant["user_deleted_at"] == 0:
+            for restaurant in restaurants:
+                results.append({
+                    "id": restaurant["user_pk"],
+                    "name": restaurant["user_name"],
+                    "type": "restaurant"
+                })
+
+        if item["user_deleted_at"] == 0:
+            for item in items:
+                results.append({
+                    "id": item["item_pk"],
+                    "name": item["item_title"],
+                    "price": item["item_price"],
+                    "restaurant_id": item["item_user_fk"],
+                    "type": "item"
+                })
+
+        return jsonify(results)
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 ##############################
 ##############################
