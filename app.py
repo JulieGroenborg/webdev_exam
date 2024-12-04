@@ -781,7 +781,6 @@ def login():
 @app.post("/items")
 def create_item():
     try:
-        # DONE_TODO: validate item_title, item_price
         item_user_fk = session.get("user").get("user_pk")
         item_pk = str(uuid.uuid4())
         item_title = x.validate_item_title()
