@@ -16,15 +16,26 @@
         <button type="submit">Search</button>
     </form>
 
-    {% if results %}
-    <h2>Search Results:</h2>
+    {% if filtered_restaurants %}
+    <h3>Restaurants:</h3>
     <ul>
-        {% for item in results %}
-        <li>{{ item }}</li>
+        {% for user in filtered_restaurants %}
+        <li>{{ user['user_name'] }}</li>
         {% endfor %}
     </ul>
     {% elif query %}
-    <p>No results found for "{{ query }}"</p>
+    <p>No restaurants found for "{{ query }}"</p>
+    {% endif %}
+
+    {% if filtered_items %}
+    <h2>Items:</h2>
+    <ul>
+        {% for item in filtered_items %}
+        <li>{{ item['item_title'] }}</li>
+        {% endfor %}
+    </ul>
+    {% elif query %}
+    <p>No items found for "{{ query }}"</p>
     {% endif %}
 </body>
 

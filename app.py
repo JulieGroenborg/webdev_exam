@@ -294,14 +294,43 @@ def view_reset_password(user_reset_password_key):
 ##############################
 @app.route('/search')
 def search():
-    query = request.args.get('query', '')
+    query = request.args.get('query', '').strip().lower()  # Ensure no leading/trailing spaces and make lowercase
 
-    # Sample data to search through
-    items = ["Apple", "Banana", "Cherry", "Date", "Elderberry", "Fig", "Grape"]
+    db, cursor = x.db()
     
-    # Filter items based on the search query (case insensitive)
-    results = [item for item in items if query.lower() in item.lower()]
-    return render_template('results.html', query=query, results=results)
+    # Fetch all restaurants
+    cursor.execute("""
+        SELECT users.user_pk, users.user_name
+        FROM users
+        INNER JOIN users_roles ON users.user_pk = users_roles.user_role_user_fk
+        INNER JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
+        WHERE roles.role_name = 'restaurant'
+    """)
+    results = cursor.fetchall()
+
+    # Filter restaurants based on the query (search by user_name)
+    filtered_restaurants = [restaurant for restaurant in results if query in restaurant['user_name'].lower()]
+    # ic("Filtered Results: ", filtered_restaurants)
+
+    # Fetch all items
+    cursor.execute("""SELECT items.item_pk, items.item_title, items.item_price, items.item_user_fk FROM items""")
+    items = cursor.fetchall()
+    # ic("Fetched Items: ", items)
+
+    # Filter items where the item_title matches the search term (case-insensitive)
+    filtered_items = [item for item in items if query in item['item_title'].lower()]
+
+    # Display filtered items
+    # ic("Filtered Items: ", filtered_items)
+
+    # # Combine the filtered restaurants and items into a single structure
+    # combined_results = {
+    #     "restaurants": filtered_restaurants,
+    #     "items": filtered_items
+    # }
+    ic("Dette er filtered_items!!!", filtered_items)
+    # ic("Dette er combined_results!!!", combined_results)
+    return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants)
 
 
         # ########## Chatyyyyyyy ##########
