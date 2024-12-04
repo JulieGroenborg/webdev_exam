@@ -67,6 +67,7 @@ def view_test_get_redis():
 ##############################
 @app.get("/")
 def view_index():
+    session.pop("user", None)
     name = "X"
     return render_template("view_index.html", name=name)
 
