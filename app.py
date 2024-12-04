@@ -330,9 +330,16 @@ def view_reset_password(user_reset_password_key):
         if "db" in locals(): db.close()
 
 ##############################
+##############################
 @app.get('/search')
 def search():
+    if not session.get("user", ""):
+        return redirect(url_for("view_login"))
+    
+    user = session.get("user")
+
     query = request.args.get('query', '').strip().lower()  # Ensure no leading/trailing spaces and make lowercase
+
     try:
         db, cursor = x.db()
 
@@ -358,7 +365,7 @@ def search():
 
         # Display filtered items
         ic("Dette er filtered_items!!!", filtered_items)
-        return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants)
+        return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants, user=user)
     
     except Exception as ex:
         ic("I'm in the exception")  # Debugging
