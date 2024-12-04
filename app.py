@@ -33,7 +33,7 @@ def view_image(image_id):
 @app.get("/")
 def view_index():
     name = "X"
-    return render_template("view_index.html", name=name)
+    return render_template("view_index.html", name=name, message=request.args.get("message", ""))
 
 ##############################
 @app.get("/login")
@@ -698,16 +698,16 @@ def create_item():
         if "db" in locals(): db.close()
 
 ##############################
-@app.post("/restaurant/<uuid:restaurant_id>/add_to_basket")
+@app.post("/restaurant/<uuid:restaurant_id>/add_to_basket/<item_title>")
 @x.no_cache
-def add_to_basket(restaurant_id):
+def add_to_basket(restaurant_id, item_title):
     try:
         if "basket" not in session:
             session["basket"] = []
 
-        item_title = request.form.get("item_title")
-        if not item_title:
-            raise x.CustomException("Item title is required", 400)
+        # item_title = request.form.get("item_title")
+        # if not item_title:
+        #     raise x.CustomException("Item title is required", 400)
 
         session["basket"].append(item_title)
         session.modified = True
@@ -893,12 +893,12 @@ def user_update():
         if "db" in locals(): db.close()
 
 ##############################
-@app.put("/delete")
-def delete_user():
+@app.put("/delete/<user_pk>")
+def delete_user(user_pk):
     try:
-        user_pk = session.get("user", {}).get("user_pk")
-        if not user_pk:
-            raise x.CustomException("User not logged in", 403)
+        # user_pk = session.get("user", {}).get("user_pk")
+        # if not user_pk:
+        #     raise x.CustomException("User not logged in", 403)
 
         db, cursor = x.db()
         q = "SELECT user_password FROM users WHERE user_pk = %s"
@@ -924,13 +924,14 @@ def delete_user():
 
         # Proceed with deletion
         user_deleted_at = int(time.time())
+        user_updated_at = int(time.time())
         db, cursor = x.db()
         q = """
             UPDATE users 
-            SET user_deleted_at = %s 
+            SET user_deleted_at = %s, user_updated_at = %s 
             WHERE user_pk = %s
         """
-        cursor.execute(q, (user_deleted_at, user_pk))
+        cursor.execute(q, (user_deleted_at, user_updated_at, user_pk))
         db.commit()
 
         # Send confirmation email
@@ -938,8 +939,9 @@ def delete_user():
         # Clear session storage
         session.clear()
 
-        toast = render_template("___toast_ok.html", message="E-mail sent")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        # Redirect to login with a message
+        message = "User deleted. Check your email for confirmation"
+        return f""""<template mix-redirect="/?message={message}"></template>"""
         #return redirect(url_for("view_index", message="E-mail sent"))
         #return f"""<template mix-redirect="/"></template>"""
 
@@ -956,18 +958,13 @@ def delete_user():
         if "db" in locals(): db.close()
         
 ##############################
-@app.put("/delete_item")
-def delete_item():
+@app.put("/delete_item/<item_pk>")
+def delete_item(item_pk):
     try:
         # Get the user session
         item_user_fk = session.get("user", {}).get("user_pk").strip()
         if not item_user_fk:
             raise x.CustomException("User not logged in", 403)
-
-        # Get item_pk from the form
-        item_pk = request.form.get("item_pk", "").strip()
-        if not item_pk:
-            raise x.CustomException("Item ID is required", 400)
 
         # Validate ownership or existence of the item
         db, cursor = x.db()
@@ -979,12 +976,13 @@ def delete_item():
 
         # Soft delete the item
         item_deleted_at = int(time.time())
+        item_updated_at = int(time.time())
         q = """
             UPDATE items 
-            SET item_deleted_at = %s 
+            SET item_deleted_at = %s, item_updated_at = %s
             WHERE item_pk = %s AND item_user_fk = %s
         """
-        cursor.execute(q, (item_deleted_at, item_pk, item_user_fk))
+        cursor.execute(q, (item_deleted_at, item_updated_at, item_pk, item_user_fk))
         db.commit()
 
         # Return success response
