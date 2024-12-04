@@ -141,6 +141,10 @@ def view_restaurant_items(restaurant_id):
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
+
+    # Pop'er/remover basket from session to make sure it's empty
+    session.pop("basket", None)
+
     db, cursor = x.db()
 
     # Fetch the specific restaurant by its UUID
