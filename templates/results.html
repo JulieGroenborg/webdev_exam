@@ -1,5 +1,6 @@
+{% include "_top_logged.html" %}
 <!-- /templates/index.html -->
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,36 +8,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Function</title>
     <link rel="stylesheet" href="/static/styles.css">
-</head>
+</head> -->
 
-<body>
-    <h1>Search Function</h1>
+<section class="d-flex flex-col a-self-center mx-10 " md="mx-20 pb-10">
+    <h1 class="text-(2rem) pb-5 text-a-center" md="text-(3rem) pb-10">Search through restaurants and items</h1>
     <form action="/search" method="GET">
-        <input type="text" name="query" placeholder="Search..." required>
-        <button type="submit">Search</button>
+        <input class="w-100" type="text" name="query" placeholder="Search..." required>
+        <button class="bg-c-(#00C2E8) text-c-(#EBF7FD) px-4 py-2 rounded-3" type="submit">Search</button>
     </form>
-
-    {% if filtered_restaurants %}
-    <h3>Restaurants:</h3>
-    <ul>
-        {% for user in filtered_restaurants %}
-        <li>{{ user['user_name'] }}</li>
-        {% endfor %}
-    </ul>
-    {% elif query %}
-    <p>No restaurants found for "{{ query }}"</p>
-    {% endif %}
-
-    {% if filtered_items %}
-    <h2>Items:</h2>
-    <ul>
-        {% for item in filtered_items %}
-        <li>{{ item['item_title'] }}</li>
-        {% endfor %}
-    </ul>
-    {% elif query %}
-    <p>No items found for "{{ query }}"</p>
-    {% endif %}
-</body>
-
-</html>
+    <section class="w-90%" md="w-50%">
+        {% if filtered_restaurants %}
+        <h2 class="text-(1.5rem) pt-8">Restaurants:</h2>
+        <ul>
+            {% for user in filtered_restaurants %}
+            <li class="list-style-none border-c-(#E4E4E4) border-b-2 py-2">{{ user['user_name'] }}</li>
+            {% endfor %}
+        </ul>
+        {% elif query %}
+        <p>No restaurants found for "{{ query }}"</p>
+        {% endif %}
+    
+        {% if filtered_items %}
+        <h2 class="text-(1.5rem) pt-8">Items:</h2>
+        <ul>
+            {% for item in filtered_items %}
+            <li class="list-style-none border-c-(#E4E4E4) border-b-2 py-2">{{ item['item_title'] }}</li>
+            {% endfor %}
+        </ul>
+        {% elif query %}
+        <p>No items found for "{{ query }}"</p>
+        {% endif %}
+    </section>
+</section>
+{% include "_bottom.html" %}

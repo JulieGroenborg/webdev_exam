@@ -323,6 +323,11 @@ def view_reset_password(user_reset_password_key):
 ##############################
 @app.route('/search')
 def search():
+    if not session.get("user", ""):
+        return redirect(url_for("view_login"))
+
+    user = session.get("user")
+
     query = request.args.get('query', '').strip().lower()  # Ensure no leading/trailing spaces and make lowercase
 
     db, cursor = x.db()
@@ -359,7 +364,7 @@ def search():
     # }
     ic("Dette er filtered_items!!!", filtered_items)
     # ic("Dette er combined_results!!!", combined_results)
-    return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants)
+    return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants, user=user)
 
 
         # ########## Chatyyyyyyy ##########
