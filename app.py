@@ -366,9 +366,14 @@ def search():
         return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants, user=user)
     
     except Exception as ex:
+        ic(ex)
         if isinstance(ex, x.CustomException):
-            return render_template("view_400_error_to_customer.html", message=ex.message), ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -631,14 +636,13 @@ def login():
         return f"""<template mix-redirect="/"></template>"""
     except Exception as ex:
         ic(ex)
-        if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>System upgrading</template>", 500
-        return "<template>System under maintenance</template>", 500
+            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -669,9 +673,6 @@ def create_item():
             file.save(os.path.join(x.UPLOAD_ITEM_FOLDER, filename))  # Save each image
             image_filenames.append(filename)
 
-        # TODO: if saving the image went wrong, then rollback by going to the exception
-        # TODO: Success, commit
-
         db, cursor = x.db()
         q = 'INSERT INTO items VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         cursor.execute(q, (item_pk, item_user_fk,  item_title, item_price,  image_filenames[0], image_filenames[1], image_filenames[2], item_created_at, item_deleted_at, item_blocked_at, item_updated_at))
@@ -687,8 +688,8 @@ def create_item():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>System upgrating</template>", 500
-        return "<template>System under maintenance</template>", 500
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
