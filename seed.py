@@ -382,6 +382,45 @@ try:
               "Cordon Bleu", "Blini with Caviar", "Clafoutis", "Salmon Teriyaki", "Shrimp Scampi", "Frittata", 
               "Chateaubriand", "Crab Cakes", "Chicken Fried Rice", "Hot Pot", "Mole Poblano", "Tofu Scramble"]
 
+    restaurant_names = [
+    "Golden Spoon Diner", "Sunset Bistro", "Blue Lagoon Cafe",
+    "Mama Mia's Kitchen", "The Hungry Bear", "Skyline Tavern",
+    "Crimson Oak Steakho", "The Velvet Fork", "Crescent Moon Caf",
+    "Silver Star Eatery", "Harborview Grill", "Rustic Roots Kitch",
+    "The Cozy Table", "Willow's Bistro", "Fire & Smoke BBQ",
+    "Urban Harvest", "Hidden Gem Diner", "Maple Grove Cafe",
+    "The Sizzling Skille", "Summit View Tavern", "Eclipse Bar & Gril",
+    "Morning Dew Cafe", "The Rusty Spoon", "Emerald Coast Bistr",
+    "Luna's Tacos & Tequ", "The Wandering Fork", "Hickory Hills BBQ",
+    "Oak & Stone Eatery", "The Golden Lantern", "Bayside Grill",
+    "Savory Seasons Kitc", "The Lazy Pelican", "Redwood Bistro",
+    "The Blooming Table", "Aspen Heights Cafe", "Twilight Tavern",
+    "The Daily Dish", "Sweetwater Bar & Gr", "Ironwood Kitchen",
+    "Coastal Breeze Eate", "The Midnight Diner", "Golden Harvest Bis",
+    "The Roaring Grill", "Prairie Sun Cafe", "Vineyard View Taver",
+    "The Rustic Fork", "The Dancing Pine", "Sunflower Eatery",
+    "The Wild Thyme", "Crave Kitchen & Bar", "The Clover Leaf Caf",
+    "Pinecrest Bistro", "Sapphire Sky Gril", "The Hungry Moose",
+    "Cedar Ridge Eatery", "Rosewood Cafe", "The Laughing Trout",
+    "The Crimson Clover", "Copper Pot Kitchen", "Bluebird Bistro",
+    "The Iron Skillet", "Pebble Shore Taver", "The Whistling Kett",
+    "Mountain View Cafe", "Silver Birch Gril", "Seaside Eats",
+    "The Rolling Pin", "The Rustic Rail", "Amber Waves Eatery",
+    "The Lucky Spruce", "Harvest Moon Cafe", "The Salty Anchor",
+    "The Wooden Table", "Meadowlark Bistro", "Golden Horizon Dine",
+    "Red Maple Tavern", "Summit Ridge Cafe", "The Wandering Elk",
+    "Crimson Flame Gril", "Lavender & Thyme C", "The Riverbend Tave",
+    "Copperfield's Kitc", "Shoreline Bistro", "The Velvet Vine",
+    "Blue Horizon Eater", "The Smoky Cedar", "Misty Ridge Cafe",
+    "The Golden Trout", "Cozy Hearth Bistro", "The Frosty Mug",
+    "Sunrise Kitchen", "Riverside Grill", "The Rustic Barrel",
+    "Autumn Breeze Eate", "The Midnight Fork", "Spruce & Sage Tave",
+    "Evergreen Bistro", "The Tasty Table", "Golden Valley Kitch"
+]
+
+
+
+
     user_password = hashed_password = generate_password_hash("password")
 
     for _ in range(10):
@@ -389,7 +428,7 @@ try:
         user_verified_at = random.choice([0, int(time.time())])
         user = {
             "user_pk": user_pk,
-            "user_name": fake.first_name(),
+            "user_name": random.choice(restaurant_names),
             "user_last_name": "",
             "user_email": fake.unique.email(),
             "user_password": user_password,
