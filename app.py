@@ -99,7 +99,6 @@ def view_customer():
         return render_template("view_customer.html", user=user, restaurants=restaurants)
     except Exception as ex:
         ic(ex)
-        if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
@@ -251,7 +250,6 @@ def view_restaurant():
             item["item_image_2_url"] = f"/images/{item['item_image_2']}" if item["item_image_2"] else None
             item["item_image_3_url"] = f"/images/{item['item_image_3']}" if item["item_image_3"] else None
 
-        
     except Exception as ex:
         ic(ex)
         if isinstance(ex, x.CustomException):
@@ -261,6 +259,7 @@ def view_restaurant():
             ic(ex)
             return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
         return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -319,17 +318,18 @@ def view_reset_password(user_reset_password_key):
         return render_template("view_set_new_password.html", user_reset_password_key=user_reset_password_key, x=x)
 
     except Exception as ex:
-        ic("I'm in the exception")  # Debugging
+        ic(ex)
         if isinstance(ex, x.CustomException):
-            ic(f"Exception message: {ex.message}, Code: {ex.code}") ## Debugging
             return render_template("view_400_error_to_customer.html", message=ex.message), ex.code
-        return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
-
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
-##############################
 ##############################
 @app.get('/search')
 def search():
@@ -349,7 +349,7 @@ def search():
             FROM users
             INNER JOIN users_roles ON users.user_pk = users_roles.user_role_user_fk
             INNER JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
-            WHERE roles.role_name = 'restaurant'
+            WHERE roles.role_name = 'restaurant' AND user_blocked_at = 0 AND user_deleted_at = 0
         """)
         results = cursor.fetchall()
 
@@ -357,20 +357,16 @@ def search():
         filtered_restaurants = [restaurant for restaurant in results if query in restaurant['user_name'].lower()]
 
         # Fetch all items
-        cursor.execute("""SELECT items.item_pk, items.item_title, items.item_price, items.item_user_fk FROM items""")
+        cursor.execute("""SELECT items.item_pk, items.item_title, items.item_price, items.item_user_fk FROM items WHERE item_deleted_at = 0 AND item_blocked_at = 0""")
         items = cursor.fetchall()
 
         # Filter items where the item_title matches the search term (case-insensitive)
         filtered_items = [item for item in items if query in item['item_title'].lower()]
-
-        # Display filtered items
-        ic("Dette er filtered_items!!!", filtered_items)
+        
         return render_template('results.html', query=query, filtered_items=filtered_items, filtered_restaurants=filtered_restaurants, user=user)
     
     except Exception as ex:
-        ic("I'm in the exception")  # Debugging
         if isinstance(ex, x.CustomException):
-            ic(f"Exception message: {ex.message}, Code: {ex.code}") ## Debugging
             return render_template("view_400_error_to_customer.html", message=ex.message), ex.code
         return """<template mix-target="#toast" mix-bottom>System error occurred.</template>""", 500
     
@@ -706,9 +702,7 @@ def add_to_basket(restaurant_id):
             session["basket"] = []
 
         item_title = request.form.get("item_title")
-        if not item_title:
-            raise x.CustomException("Item title is required", 400)
-
+        
         session["basket"].append(item_title)
         session.modified = True
 
@@ -741,7 +735,7 @@ def buy_all():
                     <template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
-        ic(ex)  # Debug log
+        ic(ex)
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
