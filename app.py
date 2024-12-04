@@ -97,9 +97,10 @@ def view_customer():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    db, cursor = x.db()
+    try:
+        db, cursor = x.db()
 
-    cursor.execute("""
+        cursor.execute("""
         SELECT 
             users.*, -- All user columns
             MIN(items.item_image_1) AS item_image -- Select a single item image (e.g., the smallest lexicographically)
@@ -110,72 +111,99 @@ def view_customer():
         WHERE roles.role_name = 'restaurant'
         GROUP BY users.user_pk -- Group by user to avoid duplicates
         """)
-    restaurants = cursor.fetchall()
-    ic("Restaurant data with items", restaurants)
+        restaurants = cursor.fetchall()
+        ic("Restaurant data with items", restaurants)
 
 
-###### Used chatGPT to generate code for the leaflet-map ########
+    ###### Used chatGPT to generate code for the leaflet-map ########
     # Function to generate random latitude and longitude within Copenhagen's bounds
-    def generate_random_coordinates():
+        def generate_random_coordinates():
         # Latitude range for Copenhagen (approx. 55.61 to 55.73)
-        lat = random.uniform(55.61, 55.73)
+            lat = random.uniform(55.61, 55.73)
         # Longitude range for Copenhagen (approx. 12.48 to 12.65)
-        lon = random.uniform(12.48, 12.65)
+            lon = random.uniform(12.48, 12.65)
         # Return the generated latitude and longitude as a tuple
-        return lat, lon
+            return lat, lon
 
     # Iterate through the list of restaurants and generate random coordinates for all
-    for restaurant in restaurants:
-        lat, lon = generate_random_coordinates()  # Generate random coordinates for every restaurant
-        restaurant['latitude'] = lat  # Assign latitude
-        restaurant['longitude'] = lon  # Assign longitude
+        for restaurant in restaurants:
+            lat, lon = generate_random_coordinates()  # Generate random coordinates for every restaurant
+            restaurant['latitude'] = lat  # Assign latitude
+            restaurant['longitude'] = lon  # Assign longitude
         # ic("Restaurant latitude:", lat)  # Debugging output
         # ic("Restaurant longitude:", lon)  # Debugging output
 ####### Code for the leaflet-map END ######
 
-    return render_template("view_customer.html", user=user, restaurants=restaurants)
-
+        return render_template("view_customer.html", user=user, restaurants=restaurants)
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+        
 ##############################
+
 @app.get("/restaurant/<uuid:restaurant_id>")
 def view_restaurant_items(restaurant_id):
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    db, cursor = x.db()
+    try:
+        db, cursor = x.db()
 
-    # Fetch the specific restaurant by its UUID
-    cursor.execute("""
-        SELECT * FROM users 
-        WHERE user_pk = %s 
-        AND user_pk IN (
-            SELECT user_role_user_fk 
-            FROM users_roles
-            WHERE user_role_role_fk = (
-                SELECT role_pk FROM roles WHERE role_name = 'restaurant'
+        # Fetch the specific restaurant by its UUID
+        cursor.execute("""
+            SELECT * FROM users 
+            WHERE user_pk = %s 
+            AND user_pk IN (
+                SELECT user_role_user_fk 
+                FROM users_roles
+                WHERE user_role_role_fk = (
+                    SELECT role_pk FROM roles WHERE role_name = 'restaurant'
+                )
             )
-        )
-    """, (str(restaurant_id),))  # Pass UUID as string in tuple
+        """, (str(restaurant_id),))  # Pass UUID as string in tuple
 
-    print("Restaurant ID:", str(restaurant_id))
+        print("Restaurant ID:", str(restaurant_id))
 
-    restaurant = cursor.fetchone()
+        restaurant = cursor.fetchone()
 
-    # Handle case where restaurant does not exist
-    if not restaurant:
-        return "Restaurant not found", 404
+        # Handle case where restaurant does not exist
+        if not restaurant:
+            return "Restaurant not found", 404
 
-    # Fetch items for this specific restaurant
-    cursor.execute("""
-        SELECT *
-        FROM items
-        WHERE item_user_fk = %s
-    """, (str(restaurant_id),))  # Pass UUID as string in tuple
+        # Fetch items for this specific restaurant
+        cursor.execute("""
+            SELECT *
+            FROM items
+            WHERE item_user_fk = %s
+        """, (str(restaurant_id),))  # Pass UUID as string in tuple
 
-    items = cursor.fetchall()
+        items = cursor.fetchall()
 
-    return render_template("view_restaurants_items.html", user=user, restaurant=restaurant, items=items)
-
-
+        return render_template("view_restaurants_items.html", user=user, restaurant=restaurant, items=items)
+    
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 
@@ -198,21 +226,35 @@ def view_admin():
     user = session.get("user")
     if not "admin" in user.get("roles", ""):
         return redirect(url_for("view_login"))
-    
-    db, cursor = x.db()
-    cursor.execute("""  SELECT * FROM users
+    try:
+        db, cursor = x.db()
+        cursor.execute("""  SELECT * FROM users
                         JOIN users_roles ON user_pk = user_role_user_fk  
                         JOIN roles ON user_role_role_fk = role_pk                
                         ORDER BY user_created_at DESC
                    """) #Get all users and their role
-    users = cursor.fetchall()
-    ic("Dette er user", users)
+        users = cursor.fetchall()
+        ic("Dette er user", users)
 
-    cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC") #Get all items
-    items = cursor.fetchall()
-    return render_template("view_admin.html", user=user, users=users, items=items, x=x)
+        cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC") #Get all items
+        items = cursor.fetchall()
+        return render_template("view_admin.html", user=user, users=users, items=items, x=x)
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
-    # TODO: husk at close db again.
+
+
 
 ##############################
 @app.get("/restaurant")
@@ -228,8 +270,8 @@ def view_restaurant():
     if not user_pk:
         return redirect(url_for("view_login"))  # Redirect if user_pk is missing
 
-    db, cursor = x.db()  # Assuming this returns a connection and cursor
     try:
+        db, cursor = x.db()  # Connect to the database  
         cursor.execute("""
         SELECT 
             item_pk,
@@ -251,9 +293,19 @@ def view_restaurant():
             item["item_image_2_url"] = f"/images/{item['item_image_2']}" if item["item_image_2"] else None
             item["item_image_3_url"] = f"/images/{item['item_image_3']}" if item["item_image_3"] else None
 
+    except Exception as ex:
+        ic(ex)
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
+        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
         
     finally:
-        db.close()  # Ensure the database connection is closed
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
     return render_template("view_restaurant.html", user=user, x=x, items=items)
 
