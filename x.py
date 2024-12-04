@@ -18,11 +18,7 @@ CUSTOMER_ROLE_PK = "c56a4180-65aa-42ec-a945-5fd21dec0538"
 PARTNER_ROLE_PK = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 RESTAURANT_ROLE_PK = "9f8c8d22-5a67-4b6c-89d7-58f8b8cb4e15"
 
-
-# form to get data from input fields
-# args to get data from the url
-# values to get data from the url and from the form
-
+###############################
 class CustomException(Exception):
     def __init__(self, message, code):
         super().__init__(message)  # Initialize the base class with the message
@@ -31,7 +27,6 @@ class CustomException(Exception):
 
 def raise_custom_exception(error, status_code):
     raise CustomException(error, status_code)
-
 
 ##############################
 def db():
@@ -44,7 +39,6 @@ def db():
     cursor = db.cursor(dictionary=True)
     return db, cursor
 
-
 ##############################
 def no_cache(view):
     @wraps(view)
@@ -56,9 +50,7 @@ def no_cache(view):
         return response
     return no_cache_view
 
-
 ##############################
-
 def allow_origin(origin="*"):
     def decorator(f):
         @wraps(f)
@@ -73,7 +65,6 @@ def allow_origin(origin="*"):
             return response
         return decorated_function
     return decorator
-
 
 ##############################
 USER_NAME_MIN = 2
@@ -125,32 +116,16 @@ def validate_uuid4(uuid4 = ""):
 ##############################
 UPLOAD_ITEM_FOLDER = './images'
 ALLOWED_ITEM_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "JPG"}
-
 def validate_individual_file(file):
     if file.filename == "":
         raise_custom_exception("Image name is invalid", 400)
-
     if file:
         file_extension = os.path.splitext(file.filename)[1][1:]
         if file_extension not in ALLOWED_ITEM_IMAGE_EXTENSIONS:
             raise_custom_exception("Invalid image extension", 400)
         filename = str(uuid.uuid4()) + "." + file_extension
         return file, filename
-
-# def validate_item_image():
-#     if 'item_image' not in request.files: raise_custom_exception("item_image missing", 400)
-#     file = request.files.get("item_image", "")
-#     if file.filename == "": raise_custom_exception("item_image name invalid", 400)
-
-#     if file:
-#         ic(file.filename)
-#         file_extension = os.path.splitext(file.filename)[1][1:]
-#         ic(file_extension)
-#         if file_extension not in ALLOWED_ITEM_IMAGE_EXTENSIONS: raise_custom_exception("item_image invalid extension", 400)
-#         filename = str(uuid.uuid4()) + "." + file_extension
-#         return file, filename 
-
-
+    
 ##############################
 def send_verify_email(to_email, user_verification_key):
     try:
@@ -252,8 +227,7 @@ def send_reset_email(user_email, user_reset_password_key):
     except Exception as ex:
         raise CustomException("Cannot send email", 500)
 
-    ##########################################################
-    
+##############################
 def send_blocked_email(user_pk=None, item_pk=None):
     try:
         # Create a gmail fullflaskdemomail
@@ -273,7 +247,6 @@ def send_blocked_email(user_pk=None, item_pk=None):
         message["From"] = sender_email
         message["To"] = receiver_email
         
-
         if user_pk:
             message["Subject"] = "User blocked from Viento"
             body = f"""<p> User with ID {user_pk} has been blocked from Viento.</p>  
@@ -302,11 +275,8 @@ def send_blocked_email(user_pk=None, item_pk=None):
         raise_custom_exception("cannot send email", 500)
     finally:
         pass
-    
-    
-    
-    
-    
+
+##############################
 def send_unblocked_email(user_pk=None, item_pk=None):
     try:
         # Create a gmail fullflaskdemomail
@@ -393,7 +363,6 @@ def send_confirm_delete():
         raise_custom_exception("cannot send email", 500)
     finally:
         pass
-
 
 ##############################
 def send_order_email(items):
