@@ -219,15 +219,43 @@ def view_admin():
 def view_restaurant():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
-    user = session.get("user")
 
-    db, cursor = x.db()
-    cursor.execute("SELECT * FROM items ORDER BY item_created_at DESC")
-    items = cursor.fetchall()
+    user = session.get("user")
+    user_pk = session.get("user", {}).get("user_pk")
+    print("User PK:", user_pk)
+
+    if not user_pk:
+        return redirect(url_for("view_login"))  # Redirect if user_pk is missing
+
+    db, cursor = x.db()  # Assuming this returns a connection and cursor
+    try:
+        cursor.execute("""
+        SELECT 
+            item_pk,
+            item_title,
+            item_price,
+            item_created_at,
+            item_updated_at,
+            item_image_1,
+            item_image_2,
+            item_image_3
+        FROM items 
+        WHERE item_user_fk = %s AND item_deleted_at = 0 
+        ORDER BY item_created_at DESC
+        """, (user_pk,))
+        items = cursor.fetchall()
+        
+        for item in items:
+            item["item_image_1_url"] = f"/images/{item['item_image_1']}" if item["item_image_1"] else None
+            item["item_image_2_url"] = f"/images/{item['item_image_2']}" if item["item_image_2"] else None
+            item["item_image_3_url"] = f"/images/{item['item_image_3']}" if item["item_image_3"] else None
+
+        
+    finally:
+        db.close()  # Ensure the database connection is closed
 
     return render_template("view_restaurant.html", user=user, x=x, items=items)
 
-     # TODO: husk at close db again.
     
 ##############################
 @app.get("/profile")
@@ -504,7 +532,6 @@ def signup_partner():
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
@@ -857,6 +884,92 @@ def _________PUT_________(): pass
 ##############################
 ##############################
 
+@app.put("/items/<item_pk>")
+def item_update(item_pk):
+    try:
+        # Validate inputs
+        item_pk = x.validate_uuid4(item_pk)
+        item_title = x.validate_item_title()
+        item_price = x.validate_item_price()
+        item_updated_at = int(time.time())
+
+        # Dynamic query for images
+        dynamic_images = []
+        dynamic_images_values = []
+        upload_folder = x.UPLOAD_ITEM_FOLDER
+
+        if request.files.get("item_image_1"):
+            file = request.files.get("item_image_1")
+            unique_filename = f"{item_pk}_1.png"  # Create a unique filename using item_pk
+            dynamic_images.append("item_image_1 = %s")
+            dynamic_images_values.append(unique_filename)
+            file.save(os.path.join(upload_folder, unique_filename))  # Save the file
+
+        if request.files.get("item_image_2"):
+            file = request.files.get("item_image_2")
+            unique_filename = f"{item_pk}_2.png"  # Create a unique filename using item_pk
+            dynamic_images.append("item_image_2 = %s")
+            dynamic_images_values.append(unique_filename)
+            file.save(os.path.join(upload_folder, unique_filename))  # Save the file
+
+        if request.files.get("item_image_3"):
+            file = request.files.get("item_image_3")
+            unique_filename = f"{item_pk}_3.png"  # Create a unique filename using item_pk
+            dynamic_images.append("item_image_3 = %s")
+            dynamic_images_values.append(unique_filename)
+            file.save(os.path.join(upload_folder, unique_filename))  # Save the file
+
+        # Prepare query
+        set_clause = ", ".join(dynamic_images)  # Dynamic part for images
+        q = f"""
+            UPDATE items
+            SET item_title = %s, item_price = %s, item_updated_at = %s
+            {', ' + set_clause if set_clause else ''}
+            WHERE item_pk = %s
+        """
+        # Combine all parameter values
+        values = [item_title, item_price, item_updated_at] + dynamic_images_values + [item_pk]
+
+        # Debugging logs (optional)
+        ic(q)
+        ic(values)
+
+        # Execute query
+        db, cursor = x.db()
+        cursor.execute(q, values)
+        if cursor.rowcount != 1:
+            x.raise_custom_exception("Cannot update item", 401)
+        db.commit()
+
+        # Return success response
+        return f"""<template mix-redirect="/restaurant"></template>"""
+        # toast = render_template("___toast_ok.html", message="Item updated")
+        # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+
+    except Exception as ex:
+        ic("Error during item update:")
+        ic(ex)
+        if "db" in locals():
+            db.rollback()
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            if "users.user_email" in str(ex):
+                return "<template>email not available</template>", 400
+            return "<template>System upgrading</template>", 500
+        return "<template>System under maintenance</template>", 500
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
+
+
+
+############################################
 @app.put("/users")
 def user_update():
     try:
@@ -1000,27 +1113,21 @@ def delete_user():
 @app.put("/delete_item")
 def delete_item():
     try:
-        print("Request Method:", request.method)
-        print("Form Data:", request.form)
         # Get the user session
         item_user_fk = session.get("user", {}).get("user_pk").strip()
-        print(f"User PK: {item_user_fk}")
         if not item_user_fk:
             raise x.CustomException("User not logged in", 403)
 
         # Get item_pk from the form
         item_pk = request.form.get("item_pk", "").strip()
-        print(f"Received item_pk: {item_pk}")
         if not item_pk:
             raise x.CustomException("Item ID is required", 400)
 
         # Validate ownership or existence of the item
         db, cursor = x.db()
-        print(f"DB: {db}, Cursor: {cursor}")
-        q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s"
+        q = "SELECT * FROM items WHERE item_pk = %s AND item_user_fk = %s AND item_deleted_at = 0"
         cursor.execute(q, (item_pk, item_user_fk))
         item = cursor.fetchone()
-        print(f"Item Found: {item}")
         if not item:
             raise x.CustomException("Item not found or unauthorized", 404)
 
@@ -1033,11 +1140,11 @@ def delete_item():
         """
         cursor.execute(q, (item_deleted_at, item_pk, item_user_fk))
         db.commit()
-        print("Item successfully soft-deleted.")
 
         # Return success response
-        toast = render_template("___toast_ok.html", message="Item deleted successfully.")
-        return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
+        return f"""<template mix-redirect="/restaurant"</template>"""
+        # toast = render_template("___toast_ok.html", message="Item deleted successfully.")
+        # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
         print(f"Error: {ex}")  # Debugging the exact error
