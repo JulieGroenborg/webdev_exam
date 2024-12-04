@@ -40,7 +40,7 @@
                 <span class="ml-auto text-c-gray:+25">{{ x.USER_PASSWORD_MIN }} to {{ x.USER_PASSWORD_MAX }}
                     characters</span>
             </label>
-            <input name="user_password" type="text" mix-check="{{ x.REGEX_USER_PASSWORD }}">
+            <input name="user_password" type="password" mix-check="{{ x.REGEX_USER_PASSWORD }}">
         </div>
 
         <button mix-post="/signup_partner" mix-data="#frm_user_signup"
