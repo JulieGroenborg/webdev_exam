@@ -104,8 +104,10 @@ def view_customer():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -162,8 +164,10 @@ def view_restaurant_items(restaurant_id):
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -207,8 +211,10 @@ def view_admin():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -257,8 +263,10 @@ def view_restaurant():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -323,8 +331,10 @@ def view_reset_password(user_reset_password_key):
             return render_template("view_400_error_to_customer.html", message=ex.message), ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -372,8 +382,10 @@ def search():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -451,8 +463,11 @@ def signup_customer():
             if "users.user_email" in str(ex):
                 toast = render_template("___toast.html", message="email not available")
                 return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", 400
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -514,8 +529,11 @@ def signup_partner():
             if "users.user_email" in str(ex):
                 toast = render_template("___toast.html", message="email not available")
                 return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", 400
-            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -577,8 +595,11 @@ def signup_restaurant():
             if "users.user_email" in str(ex):
                 toast = render_template("___toast.html", message="email not available")
                 return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", 400
-            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -641,8 +662,10 @@ def login():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrating</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -688,11 +711,10 @@ def create_item():
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return f"""<template mix-target="#toast" mix-bottom>System upgrading</template>""", 500
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
 
 ##############################
 @app.post("/restaurant/<uuid:restaurant_id>/add_to_basket")
@@ -715,8 +737,14 @@ def add_to_basket(restaurant_id):
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     finally: pass
+    
 ##############################
 @app.post("/buy_all")
 @x.no_cache
@@ -740,7 +768,9 @@ def buy_all():
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
-        return f"""<template mix-target="#toast" mix-bottom>System under maintenance</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
+    
     finally: pass
 
 ##############################
@@ -807,7 +837,7 @@ def item_update(item_pk):
         db, cursor = x.db()
         cursor.execute(q, values)
         if cursor.rowcount != 1:
-            x.raise_custom_exception("Cannot update item", 401)
+            x.raise_custom_exception("Cannot update item", 401) # 401 means lacking valid authentication credentials
         db.commit()
 
         # Return success response
@@ -816,18 +846,17 @@ def item_update(item_pk):
         # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
-        ic("Error during item update:")
         ic(ex)
-        if "db" in locals():
-            db.rollback()
+        if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
-            if "users.user_email" in str(ex):
-                return "<template>email not available</template>", 400
-            return "<template>System upgrading</template>", 500
-        return "<template>System under maintenance</template>", 500
+            ic(ex)
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
     finally:
         if "cursor" in locals():
             cursor.close()
@@ -838,7 +867,7 @@ def item_update(item_pk):
 @app.put("/users")
 def user_update():
     try:
-        if not session.get("user"): x.raise_custom_exception("please login", 401)
+        if not session.get("user"): x.raise_custom_exception("please login", 401) # 401 means missing valid authentication credentials
 
         user_pk = session.get("user").get("user_pk")
         roles = session.get("user").get("roles")
@@ -858,7 +887,9 @@ def user_update():
                 WHERE user_pk = %s
             """
         cursor.execute(q, (user_name, user_last_name, user_email, user_updated_at, user_pk))
+        
         if cursor.rowcount != 1: x.raise_custom_exception("cannot update user", 401)
+        
         db.commit()
         user = {
             "user_pk":user_pk,
@@ -880,9 +911,14 @@ def user_update():
             toast = render_template("___toast.html", message=ex.message)
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
-            if "users.user_email" in str(ex): return "<template>email not available</template>", 400
-            return "<template>System upgrating</template>", 500
-        return "<template>System under maintenance</template>", 500
+            if "users.user_email" in str(ex): 
+                toast = render_template("___toast.html", message="email not available")
+                return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", ex.code
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -893,7 +929,7 @@ def delete_user():
     try:
         user_pk = session.get("user", {}).get("user_pk")
         if not user_pk:
-            raise x.CustomException("User not logged in", 403)
+            raise x.CustomException("User not logged in", 403) # means forbidden (no permission to access this resource)
 
         db, cursor = x.db()
         q = "SELECT user_password FROM users WHERE user_pk = %s"
@@ -901,7 +937,7 @@ def delete_user():
         user = cursor.fetchone()
 
         if not user:
-            raise x.CustomException("User not found", 404)
+            raise x.CustomException("User not found", 404) # means not found
 
         # Get hashed password
         hashed_password = user["user_password"]
@@ -910,12 +946,12 @@ def delete_user():
         confirm_password = request.form.get("confirm_password")
         # Ensure input isn't empty
         if not confirm_password:
-            raise x.CustomException("Password is required to delete the account", 400)
+            raise x.CustomException("Password is required to delete the account", 400) # means bad request
         ic(confirm_password)
 
         # Verify the plain password against the hash
         if not check_password_hash(hashed_password, confirm_password):
-            raise x.CustomException("Password is not correct", 400)
+            raise x.CustomException("Password is not correct", 400) # means bad request
 
         # Proceed with deletion
         user_deleted_at = int(time.time())
@@ -939,12 +975,17 @@ def delete_user():
         #return f"""<template mix-redirect="/"></template>"""
 
     except Exception as ex:
-        print(f"Error: {ex}")  # Debugging
+        ic(ex)
         if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
-        return """<template mix-target="#toast">System error occurred.</template>""", 500
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -957,7 +998,7 @@ def delete_item():
         # Get the user session
         item_user_fk = session.get("user", {}).get("user_pk").strip()
         if not item_user_fk:
-            raise x.CustomException("User not logged in", 403)
+            raise x.CustomException("User not logged in", 403) 
 
         # Get item_pk from the form
         item_pk = request.form.get("item_pk", "").strip()
@@ -988,14 +1029,18 @@ def delete_item():
         # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
-        print(f"Error: {ex}")  # Debugging the exact error
         if "db" in locals():
             db.rollback()
         if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast">{toast}</template>""", ex.code
-        return """<template mix-target="#toast">System error occurred.</template>""", 500
-
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
+        if isinstance(ex, x.mysql.connector.Error):
+            ic(ex)
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
+    
     finally:
         if "cursor" in locals():
             cursor.close()
@@ -1035,11 +1080,14 @@ def user_block(user_pk):
         ic(ex)
         if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>Database error</template>", 500
-        return "<template>System under maintenance</template>", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -1048,7 +1096,8 @@ def user_block(user_pk):
 @app.put("/users/unblock/<user_pk>")
 def user_unblock(user_pk):
     try:
-        if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
+        if not "admin" in session.get("user").get("roles"): 
+            return redirect(url_for("view_login"))
         user_pk = x.validate_uuid4(user_pk)
         user_unblocked_at = 0
         user_updated_at = int(time.time())
@@ -1056,7 +1105,8 @@ def user_unblock(user_pk):
         db, cursor = x.db()
         q = 'UPDATE users SET user_blocked_at = %s, user_updated_at = %s WHERE user_pk = %s'
         cursor.execute(q, (user_unblocked_at, user_updated_at, user_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot unblock user", 400)
+        if cursor.rowcount != 1: 
+            x.raise_custom_exception("cannot unblock user", 400)
         db.commit()
         
         # send the unblocked user email and include the user_pk to the x function
@@ -1079,11 +1129,14 @@ def user_unblock(user_pk):
         ic(ex)
         if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>Database error</template>", 500
-        return "<template>System under maintenance</template>", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1099,7 +1152,8 @@ def item_block(item_pk):
         db, cursor = x.db()
         q = 'UPDATE items SET item_blocked_at = %s, item_updated_at = %s WHERE item_pk = %s'
         cursor.execute(q, (item_blocked_at, item_blocked_at, item_pk))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot block item", 400)
+        if cursor.rowcount != 1:
+            x.raise_custom_exception("cannot block item", 400)
         db.commit()
         
         # send the blocked item email and include the item_pk to the x function
@@ -1123,11 +1177,14 @@ def item_block(item_pk):
         ic(ex)
         if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>Database error</template>", 500
-        return "<template>System under maintenance</template>", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -1169,11 +1226,14 @@ def item_unblock(item_pk):
         ic(ex)
         if "db" in locals(): db.rollback()
         if isinstance(ex, x.CustomException):
-            return f"""<template mix-target="#toast" mix-bottom>{ex.message}</template>""", ex.code
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>Database error</template>", 500
-        return "<template>System under maintenance</template>", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1203,13 +1263,15 @@ def forgot_password():
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException): 
+        if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>System upgrating</template>", 500        
-        return "<template>System under maintenance</template>", 500 
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1223,7 +1285,9 @@ def new_password(user_reset_password_key):
         user_reset_password_key = x.validate_uuid4(user_reset_password_key)
         user_password = x.validate_user_password()
         user_repeat_password = request.form.get("user_repeat_password", "")
-        if user_password != user_repeat_password: x.raise_custom_exception("password do not match", 400)
+        
+        if user_password != user_repeat_password: 
+            x.raise_custom_exception("password do not match", 400)
         
         user_updated_at = int(time.time())
         hashed_password = generate_password_hash(user_password)
@@ -1233,7 +1297,9 @@ def new_password(user_reset_password_key):
                     SET user_password = %s, user_updated_at = %s
                     WHERE user_reset_password_key = %s""")
         cursor.execute(q, (hashed_password, user_updated_at, user_reset_password_key))
-        if cursor.rowcount != 1: x.raise_custom_exception("cannot save password", 400) 
+        
+        if cursor.rowcount != 1: 
+            x.raise_custom_exception("cannot save password", 400) 
 
         # The user_reset_password_key is sat to 0, so the user can't keep on updating the password
         cursor.execute("""UPDATE users
@@ -1247,13 +1313,16 @@ def new_password(user_reset_password_key):
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException): 
+        if isinstance(ex, x.CustomException):
             toast = render_template("___toast.html", message=ex.message)
-            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code    
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "<template>System upgrating</template>", 500        
-        return "<template>System under maintenance</template>", 500  
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -1300,11 +1369,15 @@ def verify_user(verification_key):
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
-        if isinstance(ex, x.CustomException): return ex.message, ex.code
+        if isinstance(ex, x.CustomException):
+            toast = render_template("___toast.html", message=ex.message)
+            return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            return "Database under maintenance", 500
-        return "System under maintenance", 500
+            toast = render_template("___toast.html", message="database error, system under maintenance")
+            return f"""<template mix-target="#toast">{toast}</template>""", 500
+        toast = render_template("___toast.html", message="system error, system under maintenance")
+        return f"""<template mix-target="#toast">{toast}.</template>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
