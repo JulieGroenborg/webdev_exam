@@ -1,0 +1,42 @@
+<!-- /templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Function</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <h1>Search Function</h1>
+    <form action="/search" method="GET">
+        <input type="text" name="query" placeholder="Search..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if filtered_restaurants %}
+    <h3>Restaurants:</h3>
+    <ul>
+        {% for user in filtered_restaurants %}
+        <li>{{ user['user_name'] }}</li>
+        {% endfor %}
+    </ul>
+    {% elif query %}
+    <p>No restaurants found for "{{ query }}"</p>
+    {% endif %}
+
+    {% if filtered_items %}
+    <h2>Items:</h2>
+    <ul>
+        {% for item in filtered_items %}
+        <li>{{ item['item_title'] }}</li>
+        {% endfor %}
+    </ul>
+    {% elif query %}
+    <p>No items found for "{{ query }}"</p>
+    {% endif %}
+</body>
+
+</html>

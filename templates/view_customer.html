@@ -3,6 +3,14 @@
 <main class="w-full">
     <h2 class="text-(2rem) text-a-center pb-5" md="text-(3rem) pb-10">Browse through all restaurants</h2>
     <section class="d-flex flex-col a-items-center" sm="flex-row a-items-start">
+
+    <h1>Search Function</h1>
+    <form action="/search" method="GET">
+        <input type="text" name="query" placeholder="Search..." required>
+        <button type="submit">Search</button>
+    </form>
+
+
         <div id="map" class="w-90% h-100vh" sm="70%" md="w-50%"></div>
         <section class="d-grid cols-2" sm="cols-2 mx-10" md="cols-3 mx-20">
             <!-- The variable is passed from the app.py as "restaurants" and therefore we can loop trough it -->
