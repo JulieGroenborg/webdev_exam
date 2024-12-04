@@ -150,7 +150,7 @@ def view_restaurant_items(restaurant_id):
         cursor.execute("""
             SELECT *
             FROM items
-            WHERE item_user_fk = %s
+            WHERE item_user_fk = %s AND item_deleted_at = 0 AND item_blocked_at = 0
         """, (str(restaurant_id),))  # Pass UUID as string in tuple
 
         items = cursor.fetchall()
