@@ -455,7 +455,6 @@ def signup_customer():
         role_pk = "c56a4180-65aa-42ec-a945-5fd21dec0538"
 
         user_pk = str(uuid.uuid4())
-        user_avatar = ""
         user_created_at = int(time.time())
         user_deleted_at = 0
         user_blocked_at = 0
@@ -467,10 +466,10 @@ def signup_customer():
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
+             user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -520,7 +519,6 @@ def signup_partner():
         role_pk = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
         user_pk = str(uuid.uuid4())
-        user_avatar = ""
         user_created_at = int(time.time())
         user_deleted_at = 0
         user_blocked_at = 0
@@ -532,10 +530,10 @@ def signup_partner():
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_last_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
+             user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
@@ -581,7 +579,6 @@ def signup_restaurant():
         role_pk = "9f8c8d22-5a67-4b6c-89d7-58f8b8cb4e15"
 
         user_pk = str(uuid.uuid4())
-        user_avatar = ""
         user_created_at = int(time.time())
         user_deleted_at = 0
         user_blocked_at = 0
@@ -594,10 +591,10 @@ def signup_restaurant():
         db, cursor = x.db()
         cursor.execute(
             """
-            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users VALUES(%s, %s, "", %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (user_pk, user_name, user_email, hashed_password,
-             user_avatar, user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
+             user_created_at, user_deleted_at, user_blocked_at, user_updated_at, user_verified_at, user_verification_key, user_reset_password_key),
         )
 
         cursor.execute(
