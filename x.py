@@ -178,10 +178,12 @@ def validate_item_title():
 
 ##############################
 # Constants for price validation
+MIN_PRICE = 1
+MAX_PRICE = 999.99
 PRICE_MAX_DECIMALS = 2
 PRICE_REGEX = r"^\d{1,3}(\.\d{1,2})?$"
 def validate_item_price():
-    error = f"Price must be a valid number with up to {PRICE_MAX_DECIMALS} decimal places."
+    error = f"Price must be a number between {MIN_PRICE} and {MAX_PRICE} with up to {PRICE_MAX_DECIMALS} decimal."
     price = request.form.get("item_price", "").strip()
 
     # Check if price is provided and matches the regex
