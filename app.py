@@ -682,10 +682,14 @@ def login():
 def create_item():
     
     try:
+
         item_user_fk = session.get("user").get("user_pk")
         item_pk = str(uuid.uuid4())
         item_title = x.validate_item_title()
         item_price = x.validate_item_price()
+
+        if not (1 <= item_price <= 1000.00):
+            raise x.CustomException("Price must be between 1 and 999.99", 400)
         
         item_created_at = int(time.time())
         item_deleted_at = 0
@@ -801,7 +805,7 @@ def item_update(item_pk):
         item_updated_at = int(time.time())
 
         if not (1 <= item_price <= 1000.00):
-            raise x.CustomException("Price must be between 1 and 1000.00", 400)
+            raise x.CustomException(f"Price must be between {x.PRICE_MAX_DECIMALS} and 999.99", 400)
 
         # Dynamic query for images
         dynamic_images = []
