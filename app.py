@@ -121,8 +121,6 @@ def view_restaurant_items(restaurant_id):
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
-    if not "restaurant" in user.get("roles", ""):
-        return redirect(url_for("view_login"))
     try:
     
         # Pop'er/remover basket from session to make sure it's empty
@@ -232,8 +230,9 @@ def view_admin():
 def view_restaurant():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
-
     user = session.get("user")
+    if not "restaurant" in user.get("roles", ""):
+        return redirect(url_for("view_login"))
     user_pk = session.get("user", {}).get("user_pk")
     print("User PK:", user_pk)
 
