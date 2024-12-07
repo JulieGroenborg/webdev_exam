@@ -68,7 +68,7 @@ def allow_origin(origin="*"):
 
 ##############################
 USER_NAME_MIN = 2
-USER_NAME_MAX = 40
+USER_NAME_MAX = 20
 USER_NAME_REGEX = f"^.{{{USER_NAME_MIN},{USER_NAME_MAX}}}$"
 def validate_user_name():
     error = f"name {USER_NAME_MIN} to {USER_NAME_MAX} characters"
