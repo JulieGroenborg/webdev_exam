@@ -722,6 +722,9 @@ def create_item():
             return f"""<template mix-target="#toast">{toast}</template>""", 500
         toast = render_template("___toast.html", message="system error, system under maintenance")
         return f"""<template mix-target="#toast">{toast}.</template>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 ##############################
 @app.post("/restaurant/<uuid:restaurant_id>/add_to_basket/<item_title>")
@@ -797,58 +800,52 @@ def item_update(item_pk):
         item_price = x.validate_item_price()
         item_updated_at = int(time.time())
 
+        if not (1 <= item_price <= 1000.00):
+            raise x.CustomException("Price must be between 1 and 1000.00", 400)
+
         # Dynamic query for images
         dynamic_images = []
         dynamic_images_values = []
+        saved_files = []  # Track saved files for cleanup if needed
         upload_folder = x.UPLOAD_ITEM_FOLDER
 
-        if request.files.get("item_image_1"):
-            file = request.files.get("item_image_1")
-            unique_filename = f"{item_pk}_1.png"  # Create a unique filename using item_pk
-            dynamic_images.append("item_image_1 = %s")
-            dynamic_images_values.append(unique_filename)
-            file.save(os.path.join(upload_folder, unique_filename))  # Save the file
-
-        if request.files.get("item_image_2"):
-            file = request.files.get("item_image_2")
-            unique_filename = f"{item_pk}_2.png"  # Create a unique filename using item_pk
-            dynamic_images.append("item_image_2 = %s")
-            dynamic_images_values.append(unique_filename)
-            file.save(os.path.join(upload_folder, unique_filename))  # Save the file
-
-        if request.files.get("item_image_3"):
-            file = request.files.get("item_image_3")
-            unique_filename = f"{item_pk}_3.png"  # Create a unique filename using item_pk
-            dynamic_images.append("item_image_3 = %s")
-            dynamic_images_values.append(unique_filename)
-            file.save(os.path.join(upload_folder, unique_filename))  # Save the file
+        # Validate and save images dynamically
+        for i in range(1, 4): # loop through 3 images where i(index) means image number
+            file_key = f"item_image_{i}" # {i} will increase depending on how far the "for loop" has looped
+            if request.files.get(file_key): # Check if the file exists
+                file = request.files[file_key] # Get the file
+                file, unique_filename = x.validate_individual_file(file) # Validate the file
+                try:
+                    file.save(os.path.join(upload_folder, unique_filename)) # Save the file
+                    saved_files.append(os.path.join(upload_folder, unique_filename)) # Track saved files
+                except IOError as e:
+                    # Delete already saved files, if something goes wrong midway through.
+                    for path in saved_files:
+                        if os.path.exists(path):
+                            os.remove(path) # Remove the file
+                    raise x.CustomException(f"Error saving file {file_key}: {str(e)}", 500)
+                dynamic_images.append(f"{file_key} = %s") # Append the file key to the dynamic_images list
+                dynamic_images_values.append(unique_filename) # Append the unique filename to the dynamic_images_values list
 
         # Prepare query
-        set_clause = ", ".join(dynamic_images)  # Dynamic part for images
+        set_clause = ", ".join(dynamic_images)
         q = f"""
             UPDATE items
             SET item_title = %s, item_price = %s, item_updated_at = %s
             {', ' + set_clause if set_clause else ''}
             WHERE item_pk = %s
         """
-        # Combine all parameter values
         values = [item_title, item_price, item_updated_at] + dynamic_images_values + [item_pk]
-
-        # Debugging logs (optional)
-        ic(q)
-        ic(values)
 
         # Execute query
         db, cursor = x.db()
         cursor.execute(q, values)
         if cursor.rowcount != 1:
-            x.raise_custom_exception("Cannot update item", 401) # 401 means lacking valid authentication credentials
+            raise x.CustomException("Item not found or no changes made", 404)
         db.commit()
 
         # Return success response
         return f"""<template mix-redirect="/restaurant"></template>"""
-        # toast = render_template("___toast_ok.html", message="Item updated")
-        # return f"""<template mix-target="#toast" mix-bottom>{toast}</template>"""
 
     except Exception as ex:
         ic(ex)
@@ -858,16 +855,17 @@ def item_update(item_pk):
             return f"""<template mix-target="#toast" mix-bottom>{toast}</template>""", ex.code
         if isinstance(ex, x.mysql.connector.Error):
             ic(ex)
-            toast = render_template("___toast.html", message="database error, system under maintenance")
+            toast = render_template("___toast.html", message="Database error, system under maintenance")
             return f"""<template mix-target="#toast">{toast}</template>""", 500
-        toast = render_template("___toast.html", message="system error, system under maintenance")
+        toast = render_template("___toast.html", message="System error, system under maintenance")
         return f"""<template mix-target="#toast">{toast}.</template>""", 500
+
     finally:
+        # Cleanup resources
         if "cursor" in locals():
             cursor.close()
         if "db" in locals():
             db.close()
-
 ############################################
 @app.put("/users")
 def user_update():
@@ -1059,6 +1057,7 @@ def user_block(user_pk):
         if cursor.rowcount != 1: x.raise_custom_exception("cannot block user", 400)
         db.commit()
         
+        
         # send the blocked user email and include the user_pk to the x function
         x.send_blocked_email(user_pk = user_pk)
 
@@ -1147,6 +1146,7 @@ def item_block(item_pk):
     try:
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         item_pk = x.validate_uuid4(item_pk)
+        user_email = x.validate_user_email()
         item_blocked_at = int(time.time())
         db, cursor = x.db()
         q = 'UPDATE items SET item_blocked_at = %s, item_updated_at = %s WHERE item_pk = %s'
@@ -1156,7 +1156,7 @@ def item_block(item_pk):
         db.commit()
         
         # send the blocked item email and include the item_pk to the x function
-        x.send_blocked_email(item_pk = item_pk)
+        x.send_blocked_email(item_pk = item_pk, user_email = user_email)
 
         item = {"item_pk":item_pk}
         btn_unblock = render_template("___btn_unblock_item.html", item=item)
