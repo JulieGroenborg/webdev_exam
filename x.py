@@ -216,7 +216,7 @@ def send_reset_email(user_email, user_reset_password_key):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, sender_email, message.as_string())
@@ -263,7 +263,7 @@ def send_blocked_email(user_pk=None, item_pk=None):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
@@ -311,7 +311,7 @@ def send_unblocked_email(user_pk=None, item_pk=None):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
@@ -351,7 +351,7 @@ def send_confirm_delete():
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
@@ -393,7 +393,7 @@ def send_order_email(items):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
