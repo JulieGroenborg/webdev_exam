@@ -4,6 +4,7 @@
         <section class="pb-20" md="border-c-(#E4E4E4) border-r-2 pr-8">
             <h2 class="text-a-center text-c-(#00C2E8)">All users</h2>
             {% for user in users %}
+                {% if user['role_name'] != 'admin' %}
             <div class="pb-2 pt-2 border-c-(#E4E4E4) border-b-2">
                 <form id="frm_user_xblock-{{user['user_pk']}}" class="d-flex j-content-between">
                     <div class="d-flex a-items-center gap-5">
@@ -21,6 +22,7 @@
 
                 </form>
             </div>
+                {% endif %}
             {% endfor %}
         </section>
 
