@@ -11,7 +11,7 @@
     <section class="d-flex flex-col a-items-center mt-10" md="mx-20">
         <h2 class="text-(2rem)" md="text-(3rem)">Hi {{ user['user_name'] }}</h2>
         <p class="text-(1rem)" md="text-(1.5rem)">Update or delete your profile here</p>
-        <section class="pt-10 w-60%" lg="d-flex flex-row w-auto">
+        <section class="pt-10 w-70%" lg="d-flex flex-row w-auto">
             <form id="frm_user_update" lg="d-flex flex-row a-items-end">
                 <div class="d-flex flex-col mb-4" lg="mr-4">
                     <label for="user_name" class="d-flex pb-1">
@@ -24,7 +24,7 @@
                 </div>
                 {% if 'restaurant' not in user['roles'] %}
                 <div class="d-flex flex-col mb-4" lg="mr-4">
-                    <label for="user_last_name" class="d-flex pb-1 w-70">
+                    <label for="user_last_name" class="d-flex pb-1 w-full" lg="w-70">
                         <span class="nowrap">Last name</span>
                         <span class="ml-auto text-c-gray:+25 nowrap">{{ x.USER_LAST_NAME_MIN }} to {{ x.USER_LAST_NAME_MAX }}
                             characters
