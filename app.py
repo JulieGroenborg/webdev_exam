@@ -33,6 +33,7 @@ def view_image(image_id):
 @app.get("/")
 def view_index():
     name = "X"
+    session.pop("user", None)
     return render_template("view_index.html", name=name, message=request.args.get("message", ""))
 
 ##############################
