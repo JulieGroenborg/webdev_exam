@@ -1146,7 +1146,6 @@ def item_block(item_pk):
     try:
         if not "admin" in session.get("user").get("roles"): return redirect(url_for("view_login"))
         item_pk = x.validate_uuid4(item_pk)
-        user_email = x.validate_user_email()
         item_blocked_at = int(time.time())
         db, cursor = x.db()
         q = 'UPDATE items SET item_blocked_at = %s, item_updated_at = %s WHERE item_pk = %s'
@@ -1156,7 +1155,7 @@ def item_block(item_pk):
         db.commit()
         
         # send the blocked item email and include the item_pk to the x function
-        x.send_blocked_email(item_pk = item_pk, user_email = user_email)
+        x.send_blocked_email(item_pk = item_pk)
 
         item = {"item_pk":item_pk}
         btn_unblock = render_template("___btn_unblock_item.html", item=item)
