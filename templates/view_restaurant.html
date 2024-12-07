@@ -43,35 +43,41 @@
         <div id="items" class="d-grid cols-1 gap-5" lg="cols-2">
             {% for item in items %}
             <section class="border-c-(#E4E4E4) border-b-2 pb-8">
-                <form id="frm_item_update-{{item['item_pk']}}" class="mt-4 d-flex flex-col" enctype="multipart/form-data">
-                    <input class="mb-4" type="text" name="item_title" value="{{item['item_title']}}" mix-check="{{ x.ITEM_TITLE_REGEX }}">
-                    <input class="mb-4" type="text" name="item_price" value="{{item['item_price']}}" mix-check="{{ x.PRICE_REGEX }}">
+                <form id="frm_item_update-{{item['item_pk']}}" class="mt-4 d-flex flex-col"
+                    enctype="multipart/form-data">
+                    <input class="mb-4" type="text" name="item_title" value="{{item['item_title']}}"
+                        mix-check="{{ x.ITEM_TITLE_REGEX }}">
+                    <input class="mb-4" type="text" name="item_price" value="{{item['item_price']}}"
+                        mix-check="{{ x.PRICE_REGEX }}">
                     <div class="d-grid cols-3 mb-4 gap-2">
                         <div class="d-flex flex-col j-content-end">
                             {% if item['item_image_1_url'] %}
-                            <img class="w-full h-100px obj-f-cover" src="{{ item['item_image_1_url'] }}" alt="Current Image 1" width="100">
+                            <img class="w-full h-100px obj-f-cover" src="{{ item['item_image_1_url'] }}"
+                                alt="Current Image 1" width="100">
                             {% else %}
                             <span>No image available</span>
                             {% endif %}
                             <label for="item_image_1">Replace Image 1</label>
                             <input type="file" name="item_image_1">
                         </div>
-                
+
                         <!-- Current Image 2 -->
                         <div class="d-flex flex-col j-content-end">
                             {% if item['item_image_2_url'] %}
-                            <img class="w-full h-100px obj-f-cover" src="{{ item['item_image_2_url'] }}" alt="Current Image 2" width="100">
+                            <img class="w-full h-100px obj-f-cover" src="{{ item['item_image_2_url'] }}"
+                                alt="Current Image 2" width="100">
                             {% else %}
                             <span>No image available</span>
                             {% endif %}
                             <label for="item_image_2">Replace Image 2</label>
                             <input type="file" name="item_image_2">
                         </div>
-                
+
                         <!-- Current Image 3 -->
                         <div class="d-flex flex-col j-content-end">
                             {% if item['item_image_3_url'] %}
-                            <img class="w-full h-100px obj-f-cover" src="{{ item['item_image_3_url'] }}" alt="Current Image 3" width="100">
+                            <img class="w-full h-100px obj-f-cover" src="{{ item['item_image_3_url'] }}"
+                                alt="Current Image 3" width="100">
                             {% else %}
                             <span>No image available</span>
                             {% endif %}
@@ -79,24 +85,34 @@
                             <input type="file" name="item_image_3">
                         </div>
                     </div>
-                    <button mix-put="/items/{{item['item_pk']}}" mix-data="#frm_item_update-{{item['item_pk']}}" class="bg-c-(#00C2E8) text-c-(#EBF7FD) rounded-3 cursor-pointer w-full">
+                    <button mix-put="/items/{{item['item_pk']}}" mix-data="#frm_item_update-{{item['item_pk']}}"
+                        class="bg-c-(#00C2E8) text-c-(#EBF7FD) rounded-3 cursor-pointer w-full">
                         Update item
                     </button>
                 </form>
-        
+
                 <!-- Separate Delete Form -->
                 <form id="frm_item_delete-{{item['item_pk']}}" class="mt-4">
-                    <input type="hidden" name="item_pk" value="{{item['item_pk']}}">
-                    <button mix-put="/delete_item" mix-data="#frm_item_delete-{{item['item_pk']}}" class="cursor-pointer bg-c-(#FE5B52) w-full text-c-(#ffffff) a-items-center">
+                    <button mix-put="/delete_item/{{ item['item_pk'] }}" mix-data="#frm_item_delete-{{item['item_pk']}}"
+                        class="cursor-pointer bg-c-(#FE5B52) w-full text-c-(#ffffff) a-items-center">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#F6F6F6"
+                                class="bi bi-trash" viewBox="0 0 16 16">
+                                <path
+                                    d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                <path fill-rule="evenodd"
+                                    d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                            </svg>
+                        </span>
                         Delete item
                     </button>
                 </form>
             </section>
-    
+
             {% endfor %}
         </div>
     </div>
-    
+
 
 </main>
 

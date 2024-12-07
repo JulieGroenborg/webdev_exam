@@ -3,8 +3,10 @@
 <main class="w-full h-100vh">
     <!-- ændrer sti til at bare gå tilbage hvor man kom fra -->
     <a href="{{url_for('view_login')}}" class="cursor-pointer ml-10 d-flex a-items-center gap-2 text-c-(#00C2E8) w-20">
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8" class="bi bi-arrow-left" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8" class="bi bi-arrow-left"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+                d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
         </svg>
         Back
     </a>
@@ -19,18 +21,21 @@
                         <span class="ml-auto text-c-gray:+25">{{ x.USER_NAME_MIN }} to {{ x.USER_NAME_MAX }}
                             characters
                         </span>
-                    </label> 
-                    <input id="user_name" type="text" name="user_name" value="{{user['user_name']}}" mix-check="{{ x.USER_NAME_REGEX }}">
+                    </label>
+                    <input id="user_name" type="text" name="user_name" value="{{user['user_name']}}"
+                        mix-check="{{ x.USER_NAME_REGEX }}">
                 </div>
                 {% if 'restaurant' not in user['roles'] %}
                 <div class="d-flex flex-col mb-4" lg="mr-4">
                     <label for="user_last_name" class="d-flex pb-1 w-full" lg="w-70">
                         <span class="nowrap">Last name</span>
-                        <span class="ml-auto text-c-gray:+25 nowrap">{{ x.USER_LAST_NAME_MIN }} to {{ x.USER_LAST_NAME_MAX }}
+                        <span class="ml-auto text-c-gray:+25 nowrap">{{ x.USER_LAST_NAME_MIN }} to {{
+                            x.USER_LAST_NAME_MAX }}
                             characters
                         </span>
                     </label>
-                    <input type="text" name="user_last_name" value="{{user['user_last_name']}}" mix-check="{{ x.USER_LAST_NAME_REGEX }}">
+                    <input type="text" name="user_last_name" value="{{user['user_last_name']}}"
+                        mix-check="{{ x.USER_LAST_NAME_REGEX }}">
                 </div>
                 {% endif %}
                 <div class="d-flex flex-col mb-4" lg="mr-4">
@@ -39,22 +44,29 @@
                     </label>
                     <input type="text" name="user_email" value="{{user['user_email']}}" mix-check="{{ x.REGEX_EMAIL }}">
                 </div>
-                <button mix-put="/users" mix-data="#frm_user_update" class="bg-c-(#00C2E8) text-c-(#EBF7FD) rounded-3 cursor-pointer w-full my-2" md="mb-4 mr-2">
+                <button mix-put="/users" mix-data="#frm_user_update"
+                    class="bg-c-(#00C2E8) text-c-(#EBF7FD) rounded-3 cursor-pointer w-full my-2" md="mb-4 mr-2">
                     Update
                 </button>
             </form>
-            <form id="frm_user_delete" lg="d-flex a-items-end mb-4">
-                <input type="hidden" name="user_pk" value="{{user['user_pk']}}" id="user_pk">
+            <form id="frm_user_delete-{{user['user_pk']}}" lg="d-flex a-items-end mb-4">
                 <button type="button" id="openDialog" class="cursor-pointer bg-c-(#FE5B52) w-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#F6F6F6" class="bi bi-trash" viewBox="0 0 16 16">
-                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#F6F6F6" class="bi bi-trash"
+                        viewBox="0 0 16 16">
+                        <path
+                            d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                        <path fill-rule="evenodd"
+                            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                    </svg>
                 </button>
                 <div id="overlay"></div>
                 <div id="dialog" class="j-self-center">
-                    <a href="{{url_for('view_index')}}" class="cursor-pointer pb-10 d-flex a-items-center gap-2 text-c-(#00C2E8)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                    <a href="{{url_for('view_index')}}"
+                        class="cursor-pointer pb-10 d-flex a-items-center gap-2 text-c-(#00C2E8)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#00C2E8"
+                            class="bi bi-arrow-left" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
                         </svg>
                         Return to Home
                     </a>
@@ -66,8 +78,13 @@
                         <input name="confirm_password" type="text" mix-check="{{ x.REGEX_USER_PASSWORD }}">
                     </div>
                     <div class="d-flex flex-col gap-2 pt-7" md="flex-row pt-10 j-content-between">
-                        <button mix-put="/delete" id="delete" mix-data="#frm_user_delete" class="bg-c-(#00C2E8) text-c-(#EBF7FD) py-3 px-6 h-auto" md="py-5 px-8">Delete account</button>
-                        <button id="closeDialog" class="bg-c-(#EBF7FD) text-c-(#00C2E8) py-3 px-6 border-1 border-c-(#00C2E8) h-auto" md="py-5 px-8">Keep your account</button>
+                        <button mix-put="/delete/{{ user['user_pk'] }}" id="delete"
+                            mix-data="#frm_user_delete-{{ user['user_pk'] }}"
+                            class="bg-c-(#00C2E8) text-c-(#EBF7FD) py-3 px-6 h-auto" md="py-5 px-8">Delete
+                            account</button>
+                        <button id="closeDialog"
+                            class="bg-c-(#EBF7FD) text-c-(#00C2E8) py-3 px-6 border-1 border-c-(#00C2E8) h-auto"
+                            md="py-5 px-8">Keep your account</button>
                     </div>
                 </div>
             </form>
