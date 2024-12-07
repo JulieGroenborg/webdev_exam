@@ -60,6 +60,8 @@ def view_customer():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
+    if not "customer" in user.get("roles", ""):
+        return redirect(url_for("view_login"))
     try:
         db, cursor = x.db()
 
@@ -118,6 +120,8 @@ def view_restaurant_items(restaurant_id):
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
+    if not "restaurant" in user.get("roles", ""):
+        return redirect(url_for("view_login"))
     try:
     
         # Pop'er/remover basket from session to make sure it's empty
@@ -180,6 +184,8 @@ def view_partner():
     if not session.get("user", ""):
         return redirect(url_for("view_login"))
     user = session.get("user")
+    if not "partner" in user.get("roles", ""):
+        return redirect(url_for("view_login"))
     return render_template("view_partner.html", user=user)
 
 ##############################
@@ -674,6 +680,7 @@ def login():
 ##############################
 @app.post("/items")
 def create_item():
+    
     try:
         item_user_fk = session.get("user").get("user_pk")
         item_pk = str(uuid.uuid4())

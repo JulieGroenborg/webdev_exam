@@ -75,7 +75,7 @@
                         <label for="confirm_password" class="d-flex">
                             <span>Password</span>
                         </label>
-                        <input name="confirm_password" type="text" mix-check="{{ x.REGEX_USER_PASSWORD }}">
+                        <input name="confirm_password" type="password" mix-check="{{ x.REGEX_USER_PASSWORD }}">
                     </div>
                     <div class="d-flex flex-col gap-2 pt-7" md="flex-row pt-10 j-content-between">
                         <button mix-put="/delete/{{ user['user_pk'] }}" id="delete"
