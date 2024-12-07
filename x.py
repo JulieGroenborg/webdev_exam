@@ -179,7 +179,7 @@ def validate_item_title():
 ##############################
 # Constants for price validation
 PRICE_MAX_DECIMALS = 2
-PRICE_REGEX = fr"^\d{1,3}(\.\d{1,{PRICE_MAX_DECIMALS}})?$"
+PRICE_REGEX = r"^\d{1,3}(\.\d{1,2})?$"
 def validate_item_price():
     error = f"Price must be a valid number with up to {PRICE_MAX_DECIMALS} decimal places."
     price = request.form.get("item_price", "").strip()
@@ -215,7 +215,7 @@ def send_reset_email(user_email, user_reset_password_key):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, sender_email, message.as_string())
@@ -262,7 +262,7 @@ def send_blocked_email(user_pk=None, item_pk=None):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
@@ -310,7 +310,7 @@ def send_unblocked_email(user_pk=None, item_pk=None):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
@@ -350,7 +350,7 @@ def send_confirm_delete():
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
@@ -392,7 +392,7 @@ def send_order_email(items):
         message.attach(MIMEText(body, "html"))
 
         # Connect to Gmail's SMTP server and send the email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server: # 587 is the port number for the SMTP server and is used for secure connections
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
