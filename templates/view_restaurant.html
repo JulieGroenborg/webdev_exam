@@ -47,8 +47,14 @@
                     enctype="multipart/form-data">
                     <input class="mb-4" type="text" name="item_title" value="{{item['item_title']}}"
                         mix-check="{{ x.ITEM_TITLE_REGEX }}">
-                    <input class="mb-4" type="text" name="item_price" value="{{item['item_price']}}"
-                        mix-check="{{ x.PRICE_REGEX }}">
+                        <input
+                        class="mb-4"
+                        type="text"
+                        name="item_price"
+                        value="{{item['item_price']}}"
+                        mix-check="{{ x.PRICE_REGEX }}"
+                    />
+                    
                     <div class="d-grid cols-3 mb-4 gap-2">
                         <div class="d-flex flex-col j-content-end">
                             {% if item['item_image_1_url'] %}

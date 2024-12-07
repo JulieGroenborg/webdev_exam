@@ -74,7 +74,7 @@ def view_customer():
             JOIN users_roles ON users.user_pk = users_roles.user_role_user_fk
             JOIN roles ON users_roles.user_role_role_fk = roles.role_pk
             LEFT JOIN items ON users.user_pk = items.item_user_fk
-            WHERE roles.role_name = 'restaurant'
+            WHERE roles.role_name = 'restaurant' AND users.user_blocked_at = 0
             GROUP BY users.user_pk -- Group by user to avoid duplicates
             """)
         restaurants = cursor.fetchall()
@@ -628,6 +628,10 @@ def login():
 
         if user_row["user_deleted_at"] != 0:
             toast = render_template("___toast.html", message="Account has been deleted")
+            return f"""<template mix-target="#toast">{toast}</template>""", 403
+        
+        if user_row["user_blocked_at"] != 0:
+            toast = render_template("___toast.html", message="Account has been blocked")
             return f"""<template mix-target="#toast">{toast}</template>""", 403
 
         if user_row["user_verified_at"] == 0:

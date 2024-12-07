@@ -178,9 +178,8 @@ def validate_item_title():
 
 ##############################
 # Constants for price validation
-PRICE_MAX_DECIMALS = 5
-PRICE_REGEX = fr"^\d+(\.\d{{1,{PRICE_MAX_DECIMALS}}})?$"
-
+PRICE_MAX_DECIMALS = 2
+PRICE_REGEX = fr"^\d{1,3}(\.\d{1,{PRICE_MAX_DECIMALS}})?$"
 def validate_item_price():
     error = f"Price must be a valid number with up to {PRICE_MAX_DECIMALS} decimal places."
     price = request.form.get("item_price", "").strip()
